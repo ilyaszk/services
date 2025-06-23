@@ -56,3 +56,32 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = await auth(); // Authentification (facultative si déjà gérée ailleurs)
+    const body = await req.json();
+    const { title, description, price, category } = body;
+
+    const newOffer = await prisma.offer.create({
+      data: {
+        title,
+        description,
+        price,
+        category,
+        author: user?.user?.email
+          ? { connect: { email: user.user.email } }
+          : undefined,
+      },
+    });
+
+    return NextResponse.json(newOffer, { status: 201 });
+  } catch (error) {
+    console.error("Erreur lors de la création de l'offre:", error);
+    return NextResponse.json(
+      { message: "Erreur lors de la création de l'offre" },
+      { status: 500 }
+    );
+  }
+}
+
