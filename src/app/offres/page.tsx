@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { PlusCircle, Filter, Loader2 } from "lucide-react";
+import { PlusCircle, Filter, Loader2, Pencil, XCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface Offer {
   id: string;
@@ -38,6 +39,12 @@ export default function OffersPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<number>(2000);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+  const { data: session } = useSession();
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteOfferId, setDeleteOfferId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Fonction pour récupérer les offres
   async function fetchOffers() {
@@ -99,6 +106,25 @@ export default function OffersPage() {
     fetchOffers();
   }, []);
 
+  // Fonction de suppression d'une offre
+  async function handleDelete(offerId: string) {
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/offers/${offerId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setOffers((prev) => prev.filter((o) => o.id !== offerId));
+        setShowDeleteModal(false);
+        setDeleteOfferId(null);
+      } else {
+        setDeleteError("Erreur lors de la suppression de l'offre");
+      }
+    } catch (err) {
+      setDeleteError("Erreur lors de la suppression");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Background Effects */}
@@ -129,6 +155,16 @@ export default function OffersPage() {
             Découvrez notre catalogue complet de prestations pour répondre à
             tous vos besoins professionnels
           </p>
+          {/* Lien Mes Offres pour les clients */}
+          {session?.user?.role === "Client" && (
+            <div className="flex justify-center mb-4">
+              <Link href="/offres/mes-offres">
+                <Button className="bg-gradient-to-r from-[#10b981] to-[#1e40af] hover:opacity-90 transition-opacity text-white">
+                  Mes Offres
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Nouvelle demande */}
@@ -262,8 +298,27 @@ export default function OffersPage() {
                   {offers.map((offer) => (
                     <Card
                       key={offer.id}
-                      className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#0ea5e9]/5 dark:hover:shadow-[#0ea5e9]/10"
+                      className="relative border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#0ea5e9]/5 dark:hover:shadow-[#0ea5e9]/10"
                     >
+                      {/* Boutons admin */}
+                      {session?.user?.role === "Admin" && (
+                        <>
+                          <button
+                            title="Modifier"
+                            className="absolute top-2 left-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-blue-100 dark:hover:bg-blue-900"
+                            onClick={() => window.location.href = `/offres/${offer.id}?edit=1`}
+                          >
+                            <Pencil className="w-5 h-5 text-blue-600" />
+                          </button>
+                          <button
+                            title="Supprimer"
+                            className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-red-100 dark:hover:bg-red-900"
+                            onClick={() => { setShowDeleteModal(true); setDeleteOfferId(offer.id); }}
+                          >
+                            <XCircle className="w-5 h-5 text-red-600" />
+                          </button>
+                        </>
+                      )}
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between mb-4">
                           <Badge
@@ -307,6 +362,31 @@ export default function OffersPage() {
           </div>
         </div>
       </section>
+
+      {/* Modale de suppression */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
+            <p className="mb-6">Voulez-vous vraiment supprimer cette offre ? Cette action est irréversible.</p>
+            {deleteError && <div className="text-red-500 mb-4">{deleteError}</div>}
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                onClick={() => { setShowDeleteModal(false); setDeleteOfferId(null); }}
+              >
+                Annuler
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                onClick={() => deleteOfferId && handleDelete(deleteOfferId)}
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
