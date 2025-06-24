@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,22 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth.js Models
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,18 +34,21 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  accounts      Account[]
-  sessions      Session[]
-  offers        Offer[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  role          Role      @default(Client)
+  id                     String                   @id @default(cuid())
+  name                   String?
+  email                  String?                  @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  role                   String                   @default("Client")
+  accounts               Account[]
+  offers                 Offer[]
+  sessions               Session[]
+  sentMessages           Message[]                @relation("SenderMessages")
+  receivedMessages       Message[]                @relation("ReceiverMessages")
+  conversationParticipants ConversationParticipant[]
 }
 
 model VerificationToken {
@@ -61,22 +59,51 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Application Models
 model Offer {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  price       Float
-  image       String?
-  category    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  author      User?    @relation(fields: [authorId], references: [id])
-  authorId    String?
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  price         Float
+  category      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  authorId      String?
+  image         String?
+  author        User?          @relation(fields: [authorId], references: [id])
+  conversations Conversation[]
 }
 
-enum Role {
-  Admin
-  Client
-  Client_Pro
+model Conversation {
+  id           String                   @id @default(cuid())
+  title        String?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  offerId      String?
+  offer        Offer?                   @relation(fields: [offerId], references: [id])
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  userId         String
+  conversationId String
+  joinedAt       DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  content        String
+  createdAt      DateTime     @default(now())
+  senderId       String
+  receiverId     String?
+  conversationId String
+  isRead         Boolean      @default(false)
+  sender         User         @relation("SenderMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver       User?        @relation("ReceiverMessages", fields: [receiverId], references: [id], onDelete: SetNull)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

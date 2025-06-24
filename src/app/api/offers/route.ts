@@ -104,17 +104,22 @@ export async function POST(req: NextRequest) {
           image: user.user.image || null,
         }
       });
+    }    // Prepare the data object without the image first
+    const offerData: any = {
+      title,
+      description,
+      price,
+      category,
+      author: { connect: { id: userRecord.id } }
+    };
+    
+    // Add image field only if imageUrl exists
+    if (imageUrl) {
+      offerData.image = imageUrl;
     }
 
     const newOffer = await prisma.offer.create({
-      data: {
-        title,
-        description,
-        price,
-        category,
-        image: imageUrl,  // This will work now that the field exists
-        author: { connect: { id: userRecord.id } }
-      },
+      data: offerData
     });
 
     return NextResponse.json(newOffer, { status: 201 });
