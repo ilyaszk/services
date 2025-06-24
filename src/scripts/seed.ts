@@ -16,6 +16,7 @@ async function main() {
         email: "admin@smp.com",
         name: "Admin SMP",
         password: adminPassword,
+        role: "Admin",
       },
     });
 
@@ -27,6 +28,7 @@ async function main() {
         email: "user1@example.com",
         name: "Utilisateur Test",
         password: user1Password,
+        role: "Client",
       },
     });
 
