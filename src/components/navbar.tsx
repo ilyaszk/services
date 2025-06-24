@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
+import { ConversationLink } from "@/components/conversation-link";
+import { ConversationLinkMobile } from "@/components/conversation-link-mobile";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -57,16 +59,15 @@ export default function Navbar() {
               </div>
               <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">
                 SMP
-              </span>
-            </Link>
+              </span>            </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
-              {" "}
               <Link
                 href="/offres"
                 className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
               >
                 Offres
               </Link>
+              {status === "authenticated" && <ConversationLink />}
             </div>
           </div>
 
@@ -229,7 +230,10 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Offres
-            </Link>
+            </Link>{" "}
+            {status === "authenticated" && (
+              <ConversationLinkMobile onClose={() => setIsMenuOpen(false)} />
+            )}
           </div>{" "}
           {status === "authenticated" && session?.user ? (
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
