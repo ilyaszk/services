@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
@@ -59,23 +59,59 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await auth(); // Authentification (facultative si déjà gérée ailleurs)
+    const user = await auth();
     const body = await req.json();
     const { title, description, price, category } = body;
 
+    // Vérification de l'authentification
+    if (!user?.user?.email) {
+      return NextResponse.json(
+        { message: "Authentification requise" },
+        { status: 401 }
+      );
+    }
+
+    // Solution 1: Vérifier si l'utilisateur existe avant de créer l'offre
+    const existingUser = await prisma.user.findUnique({
+      where: { email: user.user.email }
+    });
+
+    if (!existingUser) {
+      // Solution 1a: Créer l'utilisateur s'il n'existe pas
+      const newUser = await prisma.user.create({
+        data: {
+          email: user.user.email,
+          name: user.user.name || "Utilisateur",
+          image: user.user.image || null,
+        }
+      });
+
+      const newOffer = await prisma.offer.create({
+        data: {
+          title,
+          description,
+          price,
+          category,
+          author: { connect: { id: newUser.id } }
+        },
+      });
+
+      return NextResponse.json(newOffer, { status: 201 });
+    }
+
+    // Si l'utilisateur existe, créer l'offre normalement
     const newOffer = await prisma.offer.create({
       data: {
         title,
         description,
         price,
         category,
-        author: user?.user?.email
-          ? { connect: { email: user.user.email } }
-          : undefined,
+        author: { connect: { id: existingUser.id } }
       },
     });
 
     return NextResponse.json(newOffer, { status: 201 });
+
   } catch (error) {
     console.error("Erreur lors de la création de l'offre:", error);
     return NextResponse.json(
@@ -84,4 +120,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
