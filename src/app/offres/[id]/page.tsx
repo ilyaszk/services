@@ -24,14 +24,21 @@ export default function OfferDetailPage() {
   const [offer, setOffer] = useState<Offer | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
   // Fonction pour récupérer l'offre spécifique
   async function fetchOffer() {
     setLoading(true);
     setError(null);
 
+    // Ensure params.id exists before making the request
+    const offerId = params?.id;
+    if (!offerId) {
+      setError("ID de l'offre manquant");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/offers/${params.id}`);
+      const response = await fetch(`/api/offers/${offerId}`);
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -53,13 +60,12 @@ export default function OfferDetailPage() {
       setLoading(false);
     }
   }
-
   // Charger l'offre au chargement de la page
   useEffect(() => {
-    if (params.id) {
+    if (params?.id) {
       fetchOffer();
     }
-  }, [params.id]);
+  }, [params]); // Use params object as dependency
 
   if (loading) {
     return (
