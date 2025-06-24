@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-black border-t border-gray-800 py-16 text-white">
+    <footer className="bg-gray-50 dark:bg-black border-t border-gray-200 dark:border-gray-800 py-16 text-gray-800 dark:text-white">
       <div className="container mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="col-span-1 md:col-span-1">
@@ -10,16 +10,15 @@ export default function Footer() {
               <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] flex items-center justify-center">
                 <span className="text-white font-bold">S</span>
               </div>
-              <span className="ml-2 text-xl font-bold text-white">SMP</span>
+              <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">SMP</span>
             </Link>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
               Simplifiez l'accès, la contractualisation et le paiement des
               prestations de service pour votre entreprise.
             </p>
-            <div className="flex space-x-4">
-              <a
+            <div className="flex space-x-4">              <a
                 href="#"
-                className="text-gray-400 hover:text-[#0ea5e9] transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#0ea5e9] transition-colors"
                 aria-label="GitHub"
               >
                 <svg
@@ -33,10 +32,9 @@ export default function Footer() {
                     clipRule="evenodd"
                   />
                 </svg>
-              </a>
-              <a
+              </a>              <a
                 href="#"
-                className="text-gray-400 hover:text-[#8b5cf6] transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#8b5cf6] transition-colors"
                 aria-label="Twitter"
               >
                 <svg
@@ -46,10 +44,9 @@ export default function Footer() {
                 >
                   <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
                 </svg>
-              </a>
-              <a
+              </a>              <a
                 href="#"
-                className="text-gray-400 hover:text-[#10b981] transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#10b981] transition-colors"
                 aria-label="LinkedIn"
               >
                 <svg
@@ -61,12 +58,10 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
+          </div>          <div>
+            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-500">
               Plateforme
-            </h3>
-            <ul className="space-y-3 text-gray-400">
+            </h3>            <ul className="space-y-3 text-gray-600 dark:text-gray-400">
               <li>
                 <Link
                   href="/"
@@ -100,12 +95,10 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
+          </div>          <div>
+            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-500">
               Compte
-            </h3>
-            <ul className="space-y-3 text-gray-400">
+            </h3>            <ul className="space-y-3 text-gray-600 dark:text-gray-400">
               <li>
                 <Link
                   href="/auth/signin"
@@ -131,12 +124,11 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-500">
+          </div>          <div>
+            <h3 className="text-lg font-semibold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-500">
               Contact
             </h3>
-            <p className="text-gray-400 mb-3">Des questions? Contactez-nous:</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-3">Des questions? Contactez-nous:</p>
             <a
               href="mailto:contact@smp-platform.com"
               className="text-[#0ea5e9] hover:underline"
@@ -146,34 +138,31 @@ export default function Footer() {
             <div className="mt-6">
               <div className="inline-flex items-center">
                 <span className="h-2 w-2 rounded-full bg-[#10b981] mr-2"></span>
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-600 dark:text-gray-400 text-sm">
                   Tous les systèmes opérationnels
                 </span>
               </div>
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row md:justify-between md:items-center">
-          <p className="text-gray-500 text-sm">
+        <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 flex flex-col md:flex-row md:justify-between md:items-center">
+          <p className="text-gray-600 dark:text-gray-500 text-sm">
             &copy; {new Date().getFullYear()} SMP - Services Management
             Platform. Tous droits réservés.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link
+          <div className="flex space-x-6 mt-4 md:mt-0">            <Link
               href="#"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 text-sm"
             >
               Conditions d'utilisation
-            </Link>
-            <Link
+            </Link>            <Link
               href="#"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 text-sm"
             >
               Politique de confidentialité
-            </Link>
-            <Link
+            </Link>            <Link
               href="#"
-              className="text-gray-500 hover:text-gray-300 text-sm"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-300 text-sm"
             >
               Cookies
             </Link>

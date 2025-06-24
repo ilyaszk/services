@@ -143,7 +143,7 @@ export default function OffersPage() {
       </header>
 
       {/* Filters and Offers */}
-      <section className="relative z-10 container mx-auto px-6 md:px-12 py-12">
+      <section className="relative z-10 container mx-auto pb-12">
         <div className="flex flex-col gap-8">
           {/* Mobile filter toggle */}
           <div className="lg:hidden">
