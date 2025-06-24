@@ -3,13 +3,13 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Hero Section */}
       <section className="py-20 md:py-32 overflow-hidden relative">
         <div className="absolute inset-0 overflow-hidden z-0">
-          <div className="absolute -top-[30%] -left-[10%] w-[40%] h-[70%] rounded-full bg-[#1e40af]/20 blur-[100px]"></div>
-          <div className="absolute top-[20%] -right-[10%] w-[40%] h-[60%] rounded-full bg-[#8b5cf6]/20 blur-[100px]"></div>
-          <div className="absolute -bottom-[30%] left-[20%] w-[40%] h-[60%] rounded-full bg-[#0ea5e9]/20 blur-[100px]"></div>
+          <div className="absolute -top-[30%] -left-[10%] w-[40%] h-[70%] rounded-full bg-[#1e40af]/10 dark:bg-[#1e40af]/20 blur-[100px]"></div>
+          <div className="absolute top-[20%] -right-[10%] w-[40%] h-[60%] rounded-full bg-[#8b5cf6]/10 dark:bg-[#8b5cf6]/20 blur-[100px]"></div>
+          <div className="absolute -bottom-[30%] left-[20%] w-[40%] h-[60%] rounded-full bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 blur-[100px]"></div>
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-16">
@@ -18,37 +18,37 @@ export default function Home() {
                 Service Management Platform v1.0
               </span>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
               Services Management pour{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6]">
                 les entreprises modernes
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-400 mb-10 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-10 max-w-3xl mx-auto">
               Simplifiez l'accès, la contractualisation et le paiement des
               prestations de service pour votre entreprise.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link
                 href="/offres"
-                className="bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg text-center font-medium transition-colors"
+                className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white px-8 py-4 rounded-lg text-center font-medium transition-opacity"
               >
                 Découvrir les offres
               </Link>
               <Link
                 href="/api/auth/signin"
-                className="border border-gray-700 hover:bg-gray-800 text-white px-8 py-4 rounded-lg text-center font-medium transition-colors"
+                className="bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-lg text-center font-medium transition-colors"
               >
                 Connexion →
               </Link>
             </div>
           </div>
           <div className="relative mx-auto max-w-5xl">
-            <div className="absolute inset-0 border border-gray-800 rounded-xl -rotate-1"></div>
-            <div className="absolute inset-0 border border-gray-800 rounded-xl rotate-1"></div>
-            <div className="relative bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-xl p-1">
-              <div className="bg-black rounded-lg overflow-hidden">
-                <div className="h-10 border-b border-gray-800 flex items-center px-4">
+            <div className="absolute inset-0 border border-gray-200 dark:border-gray-800 rounded-xl -rotate-1"></div>
+            <div className="absolute inset-0 border border-gray-200 dark:border-gray-800 rounded-xl rotate-1"></div>
+            <div className="relative bg-gradient-to-b from-gray-100 to-white dark:from-gray-900 dark:to-black border border-gray-200 dark:border-gray-800 rounded-xl p-1">
+              <div className="bg-white dark:bg-black rounded-lg overflow-hidden">
+                <div className="h-10 border-b border-gray-200 dark:border-gray-800 flex items-center px-4">
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 bg-[#f59e0b] rounded-full"></div>
                     <div className="w-3 h-3 bg-[#10b981] rounded-full"></div>
@@ -69,10 +69,10 @@ export default function Home() {
                         clipRule="evenodd"
                       ></path>
                     </svg>
-                    <h3 className="text-2xl font-medium text-white mb-2">
+                    <h3 className="text-2xl font-medium text-gray-900 dark:text-white mb-2">
                       Simplifiez votre gestion
                     </h3>
-                    <p className="text-gray-400">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Gagnez du temps et réduisez votre stress administratif
                     </p>
                   </div>
@@ -86,22 +86,22 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="py-20 relative">
         <div className="absolute inset-0 overflow-hidden z-0">
-          <div className="absolute top-[10%] -right-[20%] w-[40%] h-[60%] rounded-full bg-[#10b981]/10 blur-[120px]"></div>
+          <div className="absolute top-[10%] -right-[20%] w-[40%] h-[60%] rounded-full bg-[#10b981]/5 dark:bg-[#10b981]/10 blur-[120px]"></div>
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <div className="flex justify-center mb-16">
-            <span className="border border-gray-800 text-gray-400 rounded-full px-5 py-1 text-sm">
+            <span className="border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 rounded-full px-5 py-1 text-sm">
               Fonctionnalités principales
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             Tout ce dont vous avez besoin pour{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#10b981] to-[#0ea5e9]">
               gérer vos prestations
             </span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#0ea5e9]/10">
+            <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#0ea5e9]/5 dark:hover:shadow-[#0ea5e9]/10">
               <div className="bg-gradient-to-r from-[#0ea5e9] to-[#1e40af] w-12 h-12 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -118,15 +118,15 @@ export default function Home() {
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-medium text-white mb-3">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                 Catalogue d'offres
               </h3>
-              <p className="text-gray-400">
+              <p className="text-gray-600 dark:text-gray-400">
                 Accédez à un large catalogue de services avec des filtres
                 avancés pour trouver exactement ce dont vous avez besoin.
               </p>
             </div>
-            <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#8b5cf6]/10">
+            <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#8b5cf6]/5 dark:hover:shadow-[#8b5cf6]/10">
               <div className="bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] w-12 h-12 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -143,15 +143,15 @@ export default function Home() {
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-medium text-white mb-3">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                 Authentification sécurisée
               </h3>
-              <p className="text-gray-400">
+              <p className="text-gray-600 dark:text-gray-400">
                 Connectez-vous facilement via GitHub ou email pour une
                 expérience utilisateur fluide et sécurisée.
               </p>
             </div>
-            <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#f59e0b]/10">
+            <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#f59e0b]/5 dark:hover:shadow-[#f59e0b]/10">
               <div className="bg-gradient-to-r from-[#f59e0b] to-[#10b981] w-12 h-12 rounded-lg flex items-center justify-center mb-6">
                 <svg
                   className="w-6 h-6 text-white"
@@ -168,10 +168,10 @@ export default function Home() {
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-xl font-medium text-white mb-3">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
                 Matching IA (Bientôt)
               </h3>
-              <p className="text-gray-400">
+              <p className="text-gray-600 dark:text-gray-400">
                 Bénéficiez d'un matching intelligent qui vous propose les
                 services les plus pertinents pour votre entreprise.
               </p>
@@ -181,17 +181,20 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 relative">
+      <section
+        id="about"
+        className="py-20 relative bg-gray-50 dark:bg-gray-900"
+      >
         <div className="absolute inset-0 overflow-hidden z-0">
-          <div className="absolute -bottom-[20%] -left-[10%] w-[40%] h-[60%] rounded-full bg-[#f59e0b]/10 blur-[120px]"></div>
+          <div className="absolute -bottom-[20%] -left-[10%] w-[40%] h-[60%] rounded-full bg-[#f59e0b]/5 dark:bg-[#f59e0b]/10 blur-[120px]"></div>
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <div className="flex justify-center mb-16">
-            <span className="border border-gray-800 text-gray-400 rounded-full px-5 py-1 text-sm">
+            <span className="border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 rounded-full px-5 py-1 text-sm">
               À propos
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
             La plateforme conçue pour{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#f59e0b] to-[#8b5cf6]">
               les entreprises modernes
@@ -199,16 +202,16 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-8">
-                <h3 className="text-2xl font-bold text-white mb-4">
+              <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-8">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                   Notre mission
                 </h3>
-                <p className="text-gray-400 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Simplifier la gestion des prestations de services
                   professionnels en offrant une expérience fluide, rapide et
                   sécurisée pour les entreprises de toute taille.
                 </p>
-                <p className="text-gray-400">
+                <p className="text-gray-600 dark:text-gray-400">
                   Que vous soyez une entreprise individuelle, une TPE ou une
                   PME, SMP vous accompagne pour optimiser la gestion de vos
                   prestataires.
@@ -216,11 +219,11 @@ export default function Home() {
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-medium text-white mb-6">
+              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-6">
                 Technologies utilisées
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-4 flex items-center">
+                <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-4 flex items-center">
                   <div className="bg-gradient-to-r from-[#0ea5e9] to-[#1e40af] w-10 h-10 rounded-lg flex items-center justify-center mr-3">
                     <svg
                       className="w-5 h-5 text-white"
@@ -230,9 +233,11 @@ export default function Home() {
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
                     </svg>
                   </div>
-                  <span className="text-gray-300">Next.js 14 (App Router)</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Next.js 14 (App Router)
+                  </span>
                 </div>
-                <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-4 flex items-center">
+                <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-4 flex items-center">
                   <div className="bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] w-10 h-10 rounded-lg flex items-center justify-center mr-3">
                     <svg
                       className="w-5 h-5 text-white"
@@ -242,9 +247,11 @@ export default function Home() {
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
                     </svg>
                   </div>
-                  <span className="text-gray-300">NextAuth.js</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    NextAuth.js
+                  </span>
                 </div>
-                <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-4 flex items-center">
+                <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-4 flex items-center">
                   <div className="bg-gradient-to-r from-[#10b981] to-[#0ea5e9] w-10 h-10 rounded-lg flex items-center justify-center mr-3">
                     <svg
                       className="w-5 h-5 text-white"
@@ -254,9 +261,11 @@ export default function Home() {
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
                     </svg>
                   </div>
-                  <span className="text-gray-300">SQLite via Prisma</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    SQLite via Prisma
+                  </span>
                 </div>
-                <div className="border border-gray-800 bg-gradient-to-b from-gray-900 to-black rounded-xl p-4 flex items-center">
+                <div className="border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black rounded-xl p-4 flex items-center">
                   <div className="bg-gradient-to-r from-[#f59e0b] to-[#10b981] w-10 h-10 rounded-lg flex items-center justify-center mr-3">
                     <svg
                       className="w-5 h-5 text-white"
@@ -266,7 +275,9 @@ export default function Home() {
                       <path d="M10 18a8 8 0 100-16 8 8 0 000 16z"></path>
                     </svg>
                   </div>
-                  <span className="text-gray-300">Tailwind CSS</span>
+                  <span className="text-gray-700 dark:text-gray-300">
+                    Tailwind CSS
+                  </span>
                 </div>
               </div>
             </div>
@@ -275,31 +286,31 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 relative">
+      <section className="py-20 relative bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6]">
         <div className="absolute inset-0 overflow-hidden z-0">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#0ea5e9] to-transparent"></div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-20"></div>
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block mb-6">
               <div className="relative">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] blur-md"></div>
-                <span className="relative bg-black border border-gray-800 rounded-full px-5 py-1 text-sm text-gray-300">
+                <div className="absolute -inset-1 rounded-full bg-white/20 blur-md"></div>
+                <span className="relative bg-black/20 border border-white/20 rounded-full px-5 py-1 text-sm text-white">
                   Démarrez maintenant
                 </span>
               </div>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+            <h2 className="text-4xl md:text-5xl font-bold mb-8 text-white">
               Prêt à simplifier la gestion de vos services ?
             </h2>
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+            <p className="text-xl text-white/80 mb-10 max-w-2xl mx-auto">
               Rejoignez SMP dès aujourd'hui et découvrez comment notre
               plateforme peut transformer votre approche des prestations de
               services.
             </p>
             <Link
               href="/offres"
-              className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white px-8 py-4 rounded-lg font-medium inline-flex items-center justify-center transition-opacity"
+              className="bg-white hover:bg-gray-100 text-[#0ea5e9] px-8 py-4 rounded-lg font-medium inline-flex items-center justify-center transition-colors"
             >
               Voir les offres
               <svg
