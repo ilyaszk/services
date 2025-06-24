@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { PlusCircle, Filter, Loader2, Pencil, XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import AIModal from "@/app/components/AIModal";
 
 interface Offer {
   id: string;
@@ -39,6 +40,9 @@ export default function OffersPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<number>(2000);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+  // État pour le modal IA
+  const [isAIModalOpen, setIsAIModalOpen] = useState<boolean>(false);
 
   const { data: session } = useSession();
 
@@ -125,6 +129,16 @@ export default function OffersPage() {
     }
   }
 
+  // Fonction pour ouvrir le modal IA
+  const openAIModal = () => {
+    setIsAIModalOpen(true);
+  };
+
+  // Fonction pour fermer le modal IA
+  const closeAIModal = () => {
+    setIsAIModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Background Effects */}
@@ -206,9 +220,26 @@ export default function OffersPage() {
                     Filtres
                   </h2>
                 </CardHeader>
-                <CardContent className="pt-6">
+
+                {/* IA Suggestion Button */}
+                <div className="flex justify-center px-[3%] w-full">
+                  <Button
+                    onClick={openAIModal}
+                    className="w-[90%] bg-gradient-to-r from-[#8b5cf6] to-[#0ea5e9] hover:opacity-90 transition-opacity text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mr-2">
+                      <path d="M12 8V16" />
+                      <path d="M8 12H16" />
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M22 12c0 5.523-4.477 10-10 10a9.956 9.956 0 0 1-7.156-3" />
+                    </svg>
+                    Demander à l'IA
+                  </Button>
+                </div>
+
+                <CardContent className="pt-2">
                   {/* Category filter */}
-                  <div className="mb-6">
+                  <div className="mb-4 mt-4">
                     <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Catégories
                     </h3>
@@ -387,6 +418,17 @@ export default function OffersPage() {
           </div>
         </div>
       )}
+
+      {/* Modal IA */}
+      <AIModal
+        isOpen={isAIModalOpen}
+        onClose={closeAIModal}
+        categories={categories}
+        onApplySuggestion={(suggestedCategories) => {
+          setSelectedCategories(suggestedCategories);
+          applyFilters();
+        }}
+      />
     </div>
   );
 }
