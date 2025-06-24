@@ -42,179 +42,178 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-sm ${
-        scrolled
-          ? "bg-white/95 dark:bg-black/80 shadow-lg shadow-[#0ea5e9]/5"
-          : "bg-white/70 dark:bg-transparent"
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/80 dark:bg-black/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 ${
+        scrolled ? "shadow-md" : ""
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] flex items-center justify-center">
-                <span className="text-white font-bold">S</span>
-              </div>
-              <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">
-                SMP
-              </span>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        
+        <div className="flex gap-6 items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-[#0ea5e9]">SMP</span>
+          </Link>
+          {/* Liens principaux à gauche */}
+          <Link
+            href="/offres"
+            className="text-gray-700 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white font-medium"
+          >
+            Offres
+          </Link>
+          {status === "authenticated" && session?.user?.role === "Client" && (
+            <Link
+              href="/offres/mes-offres"
+              className="text-gray-700 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white font-medium"
+            >
+              Mes Offres
             </Link>
-            <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
+          )}
+        </div>
+
+        <div className="hidden sm:ml-6 sm:flex sm:items-center gap-4">
+          {/* Bouton de thème */}
+          {mounted && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-full bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+              aria-label="Changer de thème"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+
+          {status === "authenticated" && session?.user ? (
+            <div className="flex items-center">
               {" "}
-              <Link
-                href="/offres"
-                className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-              >
-                Offres
-              </Link>
-            </div>
-          </div>
-
-          <div className="hidden sm:ml-6 sm:flex sm:items-center gap-4">
-            {/* Bouton de thème */}
-            {mounted && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleTheme}
-                className="w-9 h-9 rounded-full bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-                aria-label="Changer de thème"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
-                )}
-              </Button>
-            )}
-
-            {status === "authenticated" && session?.user ? (
-              <div className="flex items-center">
-                {" "}
-                <span className="text-gray-700 dark:text-gray-300 mr-4">
-                  Bonjour, {session.user.name || "Utilisateur"}
-                </span>
-                <div className="relative">
-                  <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-400 transition duration-150 ease-in-out"
-                  >
-                    {session.user.image ? (
-                      <Image
-                        src={session.user.image}
-                        alt={`Avatar de ${
-                          session.user.name || "l'utilisateur"
-                        }`}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white">
-                        {session.user.name?.charAt(0).toUpperCase() ||
-                          session.user.email?.charAt(0).toUpperCase() ||
-                          "U"}
-                      </div>
-                    )}
-                  </button>
-
-                  {isMenuOpen && (
-                    <div className="z-100 origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ring-1 ring-black ring-opacity-5">
-                      {" "}
-                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
-                        <p className="text-sm font-medium text-gray-800 dark:text-white">
-                          {session.user.name || "Utilisateur"}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                          {session.user.email}
-                        </p>
-                      </div>{" "}
-                      <Link
-                        href="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Profil
-                      </Link>{" "}
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          signOut({ redirect: true, callbackUrl: "/" });
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      >
-                        Déconnexion
-                      </button>
+              <span className="text-gray-700 dark:text-gray-300 mr-4">
+                Bonjour, {session.user.name || "Utilisateur"}
+              </span>
+              <div className="relative">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-400 transition duration-150 ease-in-out"
+                >
+                  {session.user.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={`Avatar de ${
+                        session.user.name || "l'utilisateur"
+                      }`}
+                      width={32}
+                      height={32}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white">
+                      {session.user.name?.charAt(0).toUpperCase() ||
+                        session.user.email?.charAt(0).toUpperCase() ||
+                        "U"}
                     </div>
                   )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                {" "}
-                <Link
-                  href="/auth/signin"
-                  className="text-gray-700 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white transition-colors"
-                >
-                  Connexion
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Inscription
-                </Link>
-              </div>
-            )}
-          </div>
+                </button>
 
-          {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center space-x-2">
-            {/* Bouton de thème mobile */}
-            {mounted && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleTheme}
-                className="w-8 h-8 rounded-full bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-400"
-                aria-label="Changer de thème"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4" />
-                ) : (
-                  <Moon className="h-4 w-4" />
+                {isMenuOpen && (
+                  <div className="z-100 origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ring-1 ring-black ring-opacity-5">
+                    {" "}
+                    <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
+                      <p className="text-sm font-medium text-gray-800 dark:text-white">
+                        {session.user.name || "Utilisateur"}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        {session.user.email}
+                      </p>
+                    </div>{" "}
+                    <Link
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profil
+                    </Link>{" "}
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        signOut({ redirect: true, callbackUrl: "/" });
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      Déconnexion
+                    </button>
+                  </div>
                 )}
-              </Button>
-            )}{" "}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-4">
+              {" "}
+              <Link
+                href="/auth/signin"
+                className="text-gray-700 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white transition-colors"
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Inscription
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile menu button */}
+        <div className="sm:hidden flex items-center space-x-2">
+          {/* Bouton de thème mobile */}
+          {mounted && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-full bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-400"
+              aria-label="Changer de thème"
             >
-              <span className="sr-only">Ouvrir le menu</span>
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+          )}{" "}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+          >
+            <span className="sr-only">Ouvrir le menu</span>
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              {isMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
         </div>
       </div>
 
