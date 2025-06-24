@@ -42,28 +42,10 @@ export default function Navbar() {
             </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
               <Link
-                href="/"
-                className="text-gray-300 hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-              >
-                Accueil
-              </Link>
-              <Link
                 href="/offres"
                 className="text-gray-300 hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
               >
                 Offres
-              </Link>
-              <Link
-                href="/#features"
-                className="text-gray-300 hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-              >
-                Fonctionnalités
-              </Link>
-              <Link
-                href="/#about"
-                className="text-gray-300 hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-              >
-                À propos
               </Link>
             </div>
           </div>
