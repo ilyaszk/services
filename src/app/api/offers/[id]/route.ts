@@ -67,12 +67,20 @@ export async function PATCH(req: NextRequest) {
     // Contrôle d'accès
     if (user.role !== "Admin" && offer.authorId !== user.id) {
       return NextResponse.json({ message: "Accès refusé" }, { status: 403 });
+    }    const body = await req.json();
+    const { title, description, price, category, image } = body;
+    
+    // Prepare update data
+    const updateData: any = { title, description, price, category };
+    
+    // Only include image if it exists in the request
+    if (image !== undefined) {
+      updateData.image = image;
     }
-    const body = await req.json();
-    const { title, description, price, category } = body;
+    
     const updatedOffer = await prisma.offer.update({
       where: { id },
-      data: { title, description, price, category },
+      data: updateData,
     });
     return NextResponse.json(updatedOffer);
   } catch (error) {

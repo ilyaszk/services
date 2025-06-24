@@ -30,12 +30,12 @@ export default function OfferDetailPage() {
     const [offer, setOffer] = useState<Offer | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [editMode, setEditMode] = useState(false);
-    const [form, setForm] = useState({
+    const [editMode, setEditMode] = useState(false);    const [form, setForm] = useState({
         title: "",
         description: "",
         price: 0,
         category: "",
+        image: ""
     });
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -81,16 +81,14 @@ export default function OfferDetailPage() {
         if (params?.id) {
             fetchOffer();
         }
-    }, [params]);
-
-    useEffect(() => {
+    }, [params]);    useEffect(() => {
         if (offer) {
             setForm({
                 title: offer.title,
                 description: offer.description,
                 price: offer.price,
                 category: offer.category,
-                image: offer.image
+                image: offer.image || ""
             });
         }
     }, [offer]);
@@ -98,7 +96,7 @@ export default function OfferDetailPage() {
     useEffect(() => {
         // Activer le mode édition si ?edit=1 et droits
         if (
-            searchParams.get("edit") === "1" &&
+            searchParams?.get("edit") === "1" &&
             offer &&
             session?.user &&
             (session.user.role === "Admin" || offer.author?.id === session.user.id)
