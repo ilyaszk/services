@@ -26,7 +26,7 @@ export default function NewOfferPage() {
         try {
             setIsImproving(true);
             // Améliorer la description et afficher la popup
-            const improved = await improveAd(form.description);
+            const improved = await improveAd(form.title+form.description+form.price+form.price);
             setImprovedDescription(improved);
             setIsImproving(false);
             setShowPopup(true);
