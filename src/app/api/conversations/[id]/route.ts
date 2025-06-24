@@ -10,9 +10,12 @@ export async function GET(req: NextRequest) {
   try {
     // Extraire l'ID directement de l'URL
     const id = req.nextUrl.pathname.split("/").pop();
-    
+
     if (!id) {
-      return NextResponse.json({ error: "ID de conversation manquant" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de conversation manquant" },
+        { status: 400 }
+      );
     }
 
     const session = await auth();

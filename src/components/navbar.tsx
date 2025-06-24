@@ -44,10 +44,8 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-sm ${
-        scrolled
-          ? "bg-white/95 dark:bg-black/80 shadow-lg shadow-[#0ea5e9]/5"
-          : "bg-white/70 dark:bg-transparent"
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/80 dark:bg-black/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 ${
+        scrolled ? "shadow-md" : ""
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,7 +57,8 @@ export default function Navbar() {
               </div>
               <span className="ml-2 text-xl font-bold text-gray-800 dark:text-white">
                 SMP
-              </span>            </Link>
+              </span>{" "}
+            </Link>
             <div className="hidden sm:ml-10 sm:flex sm:space-x-8">
               <Link
                 href="/offres"
@@ -91,7 +90,6 @@ export default function Navbar() {
 
             {status === "authenticated" && session?.user ? (
               <div className="flex items-center">
-                {" "}
                 <span className="text-gray-700 dark:text-gray-300 mr-4">
                   Bonjour, {session.user.name || "Utilisateur"}
                 </span>
@@ -121,7 +119,6 @@ export default function Navbar() {
 
                   {isMenuOpen && (
                     <div className="z-100 origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ring-1 ring-black ring-opacity-5">
-                      {" "}
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
                         <p className="text-sm font-medium text-gray-800 dark:text-white">
                           {session.user.name || "Utilisateur"}
@@ -129,14 +126,14 @@ export default function Navbar() {
                         <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {session.user.email}
                         </p>
-                      </div>{" "}
+                      </div>
                       <Link
                         href="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Profil
-                      </Link>{" "}
+                      </Link>
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
@@ -152,7 +149,6 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
-                {" "}
                 <Link
                   href="/auth/signin"
                   className="text-gray-700 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white transition-colors"
@@ -186,7 +182,7 @@ export default function Navbar() {
                   <Moon className="h-4 w-4" />
                 )}
               </Button>
-            )}{" "}
+            )}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
@@ -223,18 +219,17 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="sm:hidden bg-white/95 dark:bg-black/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
           <div className="pt-2 pb-3 space-y-1">
-            {" "}
             <Link
               href="/offres"
               className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
               onClick={() => setIsMenuOpen(false)}
             >
               Offres
-            </Link>{" "}
+            </Link>
             {status === "authenticated" && (
               <ConversationLinkMobile onClose={() => setIsMenuOpen(false)} />
             )}
-          </div>{" "}
+          </div>
           {status === "authenticated" && session?.user ? (
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center px-4">
@@ -252,7 +247,7 @@ export default function Navbar() {
                       session.user.email?.charAt(0).toUpperCase() ||
                       "U"}
                   </div>
-                )}{" "}
+                )}
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800 dark:text-white">
                     {session.user.name || "Utilisateur"}
@@ -263,14 +258,13 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="mt-3 space-y-1">
-                {" "}
                 <Link
                   href="/profile"
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Profil
-                </Link>{" "}
+                </Link>
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
@@ -285,7 +279,6 @@ export default function Navbar() {
           ) : (
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
               <div className="space-y-1">
-                {" "}
                 <Link
                   href="/auth/signin"
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"

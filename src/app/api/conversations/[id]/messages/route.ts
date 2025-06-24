@@ -12,16 +12,19 @@ export async function POST(req: NextRequest) {
     // La partie avant "/messages" est l'ID de conversation
     const pathParts = req.nextUrl.pathname.split("/");
     const id = pathParts[pathParts.length - 2];
-    
+
     if (!id) {
-      return NextResponse.json({ error: "ID de conversation manquant" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de conversation manquant" },
+        { status: 400 }
+      );
     }
-    
+
     const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
-    
+
     const userId = session.user.id;
     const conversationId = id;
 
