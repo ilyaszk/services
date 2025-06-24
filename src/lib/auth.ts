@@ -4,6 +4,7 @@ import NextAuth, { type DefaultSession, type NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import { prisma } from "@/lib/prisma";
+import { useSession } from "next-auth/react";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -13,6 +14,7 @@ declare module "next-auth" {
       name: string | null;
       email: string;
       image: string | null;
+      role: string | undefined;
     };
   }
 }
@@ -60,6 +62,7 @@ export const authConfig = {
           name: user.name,
           email: user.email,
           image: user.image,
+          role: user.role,
         };
       },
     }),
@@ -78,20 +81,23 @@ export const authConfig = {
         session.user.name = token.name as string | null;
         session.user.email = token.email as string | "";
         session.user.image = token.picture as string | null;
+        session.user.role = token.role as string | undefined;
       }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
+        const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+        token.role = dbUser?.role;
       }
       return token;
     },
   },
 } satisfies NextAuthConfig;
 
-// Use NextAuth with our configuration
+// Initialize NextAuth handler
 const handler = NextAuth(authConfig);
 
-// Export the auth, signIn, and signOut functions for use in other files
+// Export auth function for use in route handlers
 export const { auth, signIn, signOut } = handler;
