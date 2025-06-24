@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
+import path from "path";
+import { promises as fs } from 'fs';  // For mkdir and writeFile (async)
+import { existsSync } from 'fs';
+import { writeFile, mkdir } from 'fs/promises';
 export async function GET(req: NextRequest) {
   try {
     // Récupérer les paramètres de recherche et de filtrage (optionnel)
@@ -60,10 +63,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await auth();
-    const body = await req.json();
-    const { title, description, price, category } = body;
+    const formData = await req.formData();
 
-    // Vérification de l'authentification
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const category = formData.get("category") as string;
+    const imageFile = formData.get("image") as File | null;
+
     if (!user?.user?.email) {
       return NextResponse.json(
         { message: "Authentification requise" },
@@ -71,42 +78,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Solution 1: Vérifier si l'utilisateur existe avant de créer l'offre
-    const existingUser = await prisma.user.findUnique({
+    let imageUrl = null;
+    if (imageFile) {
+      const uploadsDir = path.join(process.cwd(), "public/uploads");
+      if (!existsSync(uploadsDir)) {
+        await mkdir(uploadsDir, { recursive: true });
+      }
+
+      const imageName = `${Date.now()}-${imageFile.name}`;
+      const imagePath = path.join(uploadsDir, imageName);
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      await writeFile(imagePath, buffer);
+      imageUrl = `/uploads/${imageName}`;
+    }
+
+    let userRecord = await prisma.user.findUnique({
       where: { email: user.user.email }
     });
 
-    if (!existingUser) {
-      // Solution 1a: Créer l'utilisateur s'il n'existe pas
-      const newUser = await prisma.user.create({
+    if (!userRecord) {
+      userRecord = await prisma.user.create({
         data: {
           email: user.user.email,
           name: user.user.name || "Utilisateur",
           image: user.user.image || null,
         }
       });
-
-      const newOffer = await prisma.offer.create({
-        data: {
-          title,
-          description,
-          price,
-          category,
-          author: { connect: { id: newUser.id } }
-        },
-      });
-
-      return NextResponse.json(newOffer, { status: 201 });
     }
 
-    // Si l'utilisateur existe, créer l'offre normalement
     const newOffer = await prisma.offer.create({
       data: {
         title,
         description,
         price,
         category,
-        author: { connect: { id: existingUser.id } }
+        image: imageUrl,  // This will work now that the field exists
+        author: { connect: { id: userRecord.id } }
       },
     });
 
