@@ -50,9 +50,12 @@ model User {
   receivedMessages       Message[]                @relation("ReceiverMessages")
   conversationParticipants ConversationParticipant[]
   contracts              Contract[]               @relation("ClientContracts")
-  contractSteps          ContractStep[]           @relation("ProviderSteps")
+  steps          ContractStep[]           @relation("ProviderSteps")
   serviceContracts       ServiceContract[]
   userProfile            UserProfile?
+  company                String?
+  jobTitle               String?
+  bio                    String?
 }
 
 model VerificationToken {
@@ -75,7 +78,7 @@ model Offer {
   image         String?
   author        User?          @relation(fields: [authorId], references: [id])
   conversations Conversation[]
-  contractSteps ContractStep[]
+  steps ContractStep[]
 }
 
 model ContractStep {
@@ -110,7 +113,7 @@ model Contract {
   clientId          String
   servicePathId     String
   client            User           @relation("ClientContracts", fields: [clientId], references: [id], onDelete: Cascade)
-  contractSteps     ContractStep[]
+  steps     ContractStep[]
 
   @@index([clientId])
 }
