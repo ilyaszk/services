@@ -396,8 +396,7 @@ export default function OfferDetailPage() {
               </div>
             )}
 
-            {/* Actions */}
-            {!offer.title.includes("Translate File") && (
+            {offer.author && (
               <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Actions rapides
