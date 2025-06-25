@@ -89,6 +89,8 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
             // alert(`Contrat créé avec succès ! ID: ${contract.id}`);
             handleClose();
 
+            window.location.href = `/contrats/${contract.id}`;
+
         } catch (error) {
             console.error('Erreur lors de la création du contrat:', error);
             alert('Erreur lors de la création du contrat. Veuillez réessayer.');
