@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Offer {
   id: string;
@@ -35,19 +35,19 @@ export default function OfferDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
     price: 0,
-    category: '',
-    image: '',
+    category: "",
+    image: "",
   });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // State for translation feature
   const [file, setFile] = useState<File | null>(null);
-  const [translatedText, setTranslatedText] = useState('');
-  const [translationError, setTranslationError] = useState('');
+  const [translatedText, setTranslatedText] = useState("");
+  const [translationError, setTranslationError] = useState("");
 
   async function fetchOffer() {
     setLoading(true);
@@ -61,13 +61,18 @@ export default function OfferDetailPage() {
     try {
       const response = await fetch(`/api/offers/${offerId}`);
       if (!response.ok) {
-        if (response.status === 404) throw new Error("Cette offre n'existe pas ou a été supprimée");
+        if (response.status === 404)
+          throw new Error("Cette offre n'existe pas ou a été supprimée");
         throw new Error("Problème lors de la récupération de l'offre");
       }
       const data: Offer = await response.json();
       setOffer(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors du chargement de l'offre");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors du chargement de l'offre"
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -87,17 +92,17 @@ export default function OfferDetailPage() {
         description: offer.description,
         price: offer.price,
         category: offer.category,
-        image: offer.image || '',
+        image: offer.image || "",
       });
     }
   }, [offer]);
 
   useEffect(() => {
     if (
-      searchParams?.get('edit') === '1' &&
+      searchParams?.get("edit") === "1" &&
       offer &&
       session?.user &&
-      (session.user.role === 'Admin' || offer.author?.id === session.user.id)
+      (session.user.role === "Admin" || offer.author?.id === session.user.id)
     ) {
       setEditMode(true);
     } else {
@@ -109,8 +114,8 @@ export default function OfferDetailPage() {
     e.preventDefault();
     try {
       const response = await fetch(`/api/offers/${offer?.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form }),
       });
       if (response.ok) {
@@ -118,10 +123,10 @@ export default function OfferDetailPage() {
         router.push(`/offres/${offer?.id}`);
         fetchOffer();
       } else {
-        alert('Erreur lors de la modification');
+        alert("Erreur lors de la modification");
       }
     } catch (err) {
-      alert('Erreur lors de la modification');
+      alert("Erreur lors de la modification");
     }
   }
 
@@ -129,16 +134,16 @@ export default function OfferDetailPage() {
     setDeleteError(null);
     try {
       const response = await fetch(`/api/offers/${offer?.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (response.ok) {
         setShowDeleteModal(false);
-        router.push('/offres');
+        router.push("/offres");
       } else {
         setDeleteError("Erreur lors de la suppression de l'offre");
       }
     } catch (err) {
-      setDeleteError('Erreur lors de la suppression');
+      setDeleteError("Erreur lors de la suppression");
     }
   }
 
@@ -150,26 +155,26 @@ export default function OfferDetailPage() {
 
   const handleTranslateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setTranslationError('');
-    setTranslatedText('');
+    setTranslationError("");
+    setTranslatedText("");
     if (!file) {
-      setTranslationError('Please select a file');
+      setTranslationError("Please select a file");
       return;
     }
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
     try {
-      const response = await fetch('/api/translate', {
-        method: 'POST',
+      const response = await fetch("/api/translate", {
+        method: "POST",
         body: formData,
       });
       if (!response.ok) {
-        throw new Error('Failed to translate');
+        throw new Error("Failed to translate");
       }
       const data = await response.json();
       setTranslatedText(data.translatedText);
     } catch (err) {
-      setTranslationError('An error occurred while translating the file.');
+      setTranslationError("An error occurred while translating the file.");
     }
   };
 
@@ -239,14 +244,18 @@ export default function OfferDetailPage() {
                     className="w-full p-2 border rounded"
                     name="title"
                     value={form.title}
-                    onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, title: e.target.value }))
+                    }
                     required
                   />
                   <textarea
                     className="w-full p-2 border rounded"
                     name="description"
                     value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, description: e.target.value }))
+                    }
                     rows={4}
                     required
                   />
@@ -255,18 +264,25 @@ export default function OfferDetailPage() {
                     name="price"
                     type="number"
                     value={form.price}
-                    onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                    }
                     required
                   />
                   <input
                     className="w-full p-2 border rounded"
                     name="category"
                     value={form.category}
-                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, category: e.target.value }))
+                    }
                     required
                   />
                   <div className="flex gap-4">
-                    <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white px-4 py-2 rounded"
+                    >
                       Enregistrer
                     </button>
                     <button
@@ -290,7 +306,8 @@ export default function OfferDetailPage() {
                       </span>
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      Publié le {new Date(offer.createdAt).toLocaleDateString('fr-FR')}
+                      Publié le{" "}
+                      {new Date(offer.createdAt).toLocaleDateString("fr-FR")}
                     </div>
                   </div>
 
@@ -327,13 +344,13 @@ export default function OfferDetailPage() {
                         {offer.author.image && (
                           <img
                             src={offer.author.image}
-                            alt={offer.author.name || 'Avatar'}
+                            alt={offer.author.name || "Avatar"}
                             className="w-12 h-12 rounded-full"
                           />
                         )}
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {offer.author.name || 'Utilisateur anonyme'}
+                            {offer.author.name || "Utilisateur anonyme"}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
                             {offer.author.email}
@@ -344,7 +361,7 @@ export default function OfferDetailPage() {
                   )}
 
                   <div className="flex flex-col sm:flex-row gap-4 mt-8 items-start justify-between">
-                    {offer.title === 'Translate File' ? (
+                    {offer.title === "Translate File" ? (
                       <div className="w-full">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                           Utiliser ce service
@@ -365,22 +382,34 @@ export default function OfferDetailPage() {
                           <Button type="submit">Traduire</Button>
                         </form>
                         {translationError && (
-                          <p className="text-red-500 mt-4">{translationError}</p>
+                          <p className="text-red-500 mt-4">
+                            {translationError}
+                          </p>
                         )}
                         {translatedText && (
                           <div className="mt-4">
-                            <h2 className="text-2xl font-bold mb-2">Texte traduit</h2>
-                            <Textarea value={translatedText as string} readOnly rows={10} />
+                            <h2 className="text-2xl font-bold mb-2">
+                              Texte traduit
+                            </h2>
+                            <Textarea
+                              value={translatedText as string}
+                              readOnly
+                              rows={10}
+                            />
                           </div>
                         )}
                       </div>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-4">
-                        {(!session?.user || offer.author?.id !== session.user.id) && (
-                          <button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors">
-                            Contacter le prestataire
-                          </button>
+                        {(!session?.user ||
+                          offer.author?.id !== session.user.id) && (
+                          <Link href={`/conversations/new/${offer.id}`}>
+                            <button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                              Contacter le prestataire
+                            </button>
+                          </Link>
                         )}
+
                         <button className="border border-gray-300 hover:bg-gray-50 text-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 py-3 px-6 rounded-lg font-medium transition-colors">
                           Ajouter aux favoris
                         </button>
@@ -388,14 +417,15 @@ export default function OfferDetailPage() {
                     )}
 
                     {session?.user &&
-                      (session.user.role === 'Admin' || offer.author?.id === session.user.id) && (
+                      (session.user.role === "Admin" ||
+                        offer.author?.id === session.user.id) && (
                         <div className="flex gap-2 items-center mt-4 sm:mt-0">
                           <button
                             className="ml-auto border border-[#0ea5e9] text-[#0ea5e9] bg-white hover:bg-[#e0f2fe] py-3 px-6 rounded-lg font-medium transition-colors"
                             style={{ minWidth: 120 }}
                             onClick={() => {
                               const url = new URL(window.location.href);
-                              url.searchParams.set('edit', '1');
+                              url.searchParams.set("edit", "1");
                               window.location.href = url.toString();
                             }}
                           >
@@ -421,11 +451,16 @@ export default function OfferDetailPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
+            <h2 className="text-xl font-bold mb-4 text-red-600">
+              Confirmer la suppression
+            </h2>
             <p className="mb-6">
-              Voulez-vous vraiment supprimer cette offre ? Cette action est irréversible.
+              Voulez-vous vraiment supprimer cette offre ? Cette action est
+              irréversible.
             </p>
-            {deleteError && <div className="text-red-500 mb-4">{deleteError}</div>}
+            {deleteError && (
+              <div className="text-red-500 mb-4">{deleteError}</div>
+            )}
             <div className="flex justify-end gap-4">
               <button
                 className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
