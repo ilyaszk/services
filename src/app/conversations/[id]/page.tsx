@@ -5,7 +5,21 @@ import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Send,
+  MessageSquare,
+  Phone,
+  Video,
+  Clock,
+  Check,
+  CheckCheck,
+  Info,
+  UserCircle,
+  Calendar,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +27,8 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { io, Socket } from "socket.io-client";
 
 interface Message {
@@ -429,31 +445,63 @@ export default function ConversationDetailPage() {
       socket.off("user_typing", handleTypingEvent);
     };
   }, [socket, session?.user?.id]);
-
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black flex justify-center items-center pt-24">
-        <Loader2 className="h-12 w-12 animate-spin text-[#0ea5e9]" />
+      <div className="min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center">
+        <div className="relative">
+          <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800/50 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[#0ea5e9]" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-[#8b5cf6] rounded-full flex items-center justify-center">
+            <MessageSquare className="h-3 w-3 text-white" />
+          </div>
+        </div>
+        <h2 className="mt-6 text-xl font-medium text-gray-800 dark:text-gray-200">
+          Chargement de la conversation...
+        </h2>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Veuillez patienter un instant
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black pt-24 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20">
+      <div className="min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center px-4">
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div className="h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+              <svg
+                className="h-8 w-8 text-red-500 dark:text-red-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <Card className="border-red-200 dark:border-red-900/50 bg-white dark:bg-gray-900">
             <CardHeader>
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
-                Erreur
+              <h2 className="text-xl font-bold text-center text-red-600 dark:text-red-400">
+                Erreur lors du chargement
               </h2>
             </CardHeader>
             <CardContent>
-              <p className="text-red-600 dark:text-red-300">{error}</p>
+              <p className="text-gray-700 dark:text-gray-300 text-center">
+                {error}
+              </p>
             </CardContent>
-            <CardFooter>
-              <Link href="/conversations" className="w-full">
-                <Button className="w-full bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 transition-opacity">
+            <CardFooter className="flex justify-center">
+              <Link href="/conversations">
+                <Button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 transition-opacity px-6">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Retour aux conversations
                 </Button>
@@ -467,22 +515,28 @@ export default function ConversationDetailPage() {
 
   if (!conversation) {
     return (
-      <div className="min-h-screen bg-white dark:bg-black pt-24 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="border-[#0ea5e9]/30 bg-[#0ea5e9]/5 dark:bg-[#0ea5e9]/10">
+      <div className="min-h-screen bg-white dark:bg-black flex flex-col justify-center items-center px-4">
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <div className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <MessageSquare className="h-8 w-8 text-[#0ea5e9]" />
+            </div>
+          </div>
+
+          <Card className="border-[#0ea5e9]/20 dark:border-[#0ea5e9]/20 bg-white dark:bg-gray-900">
             <CardHeader>
-              <h2 className="text-xl font-bold text-[#0ea5e9]">
+              <h2 className="text-xl font-bold text-center text-[#0ea5e9]">
                 Conversation non trouvée
               </h2>
             </CardHeader>
             <CardContent>
-              <p className="text-[#0ea5e9]">
+              <p className="text-gray-700 dark:text-gray-300 text-center">
                 Cette conversation n'existe pas ou vous n'y avez pas accès.
               </p>
             </CardContent>
-            <CardFooter>
-              <Link href="/conversations" className="w-full">
-                <Button className="w-full bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 transition-opacity">
+            <CardFooter className="flex justify-center">
+              <Link href="/conversations">
+                <Button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 transition-opacity px-6">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Retour aux conversations
                 </Button>
@@ -493,198 +547,247 @@ export default function ConversationDetailPage() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen bg-white dark:bg-black flex flex-col pt-16">
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col ">
       {/* Background Effects */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-[30%] -left-[10%] w-[40%] h-[70%] rounded-full bg-[#1e40af]/5 dark:bg-[#1e40af]/10 blur-[120px]"></div>
-        <div className="absolute top-[50%] -right-[10%] w-[40%] h-[60%] rounded-full bg-[#10b981]/5 dark:bg-[#10b981]/10 blur-[120px]"></div>
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute -top-[20%] -left-[5%] w-[35%] h-[50%] rounded-full bg-[#0ea5e9]/5 dark:bg-[#0ea5e9]/10 blur-[80px]"></div>
+        <div className="absolute top-[30%] -right-[15%] w-[45%] h-[40%] rounded-full bg-[#8b5cf6]/5 dark:bg-[#8b5cf6]/10 blur-[100px]"></div>
+        <div className="absolute bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-[#10b981]/5 dark:bg-[#10b981]/10 blur-[90px]"></div>
+        <div className="hidden md:block absolute top-[15%] left-[40%] w-[15%] h-[20%] rounded-full bg-[#f59e0b]/5 dark:bg-[#f59e0b]/10 blur-[70px]"></div>
       </div>
       {/* Header */}
-      <header className="sticky top-16 z-10 bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
+      <header className=" bg-white/90 dark:bg-black/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 shadow-sm">
         <div className="container mx-auto max-w-4xl px-4 py-3">
-          <div className="flex items-center">
-            <Link
-              href="/conversations"
-              className="mr-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-            </Link>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/conversations"
+                className="shrink-0 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+                aria-label="Retour aux conversations"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              </Link>
 
-            <div className="flex-1">
-              <div className="flex items-center">
-                {otherParticipant ? (
-                  <>
-                    {otherParticipant.image ? (
-                      <Image
-                        src={otherParticipant.image}
-                        alt={otherParticipant.name || "Utilisateur"}
-                        width={40}
-                        height={40}
-                        className="rounded-full mr-3"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white mr-3">
-                        {otherParticipant.name?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                    )}
-                    <div>
-                      <h2 className="font-medium text-gray-900 dark:text-white">
-                        {otherParticipant.name || "Utilisateur"}
-                      </h2>
-                      {conversation.offer && (
-                        <p className="text-xs text-[#0ea5e9]">
+              {otherParticipant ? (
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border-2 border-white dark:border-gray-800">
+                    <AvatarImage
+                      src={otherParticipant.image || ""}
+                      alt={otherParticipant.name || "Utilisateur"}
+                    />
+                    <AvatarFallback className="bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] text-white">
+                      {otherParticipant.name?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div>
+                    <h2 className="font-medium text-gray-900 dark:text-white flex items-center gap-1.5">
+                      {otherParticipant.name || "Utilisateur"}
+                      <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </h2>
+                    {conversation.offer && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                        <Info className="h-3 w-3" />
+                        <p className="truncate max-w-[180px]">
                           {conversation.offer.title}
                         </p>
-                      )}
-                    </div>
-                  </>
-                ) : (
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white">
+                    <MessageSquare className="h-5 w-5" />
+                  </div>
                   <h2 className="font-medium text-gray-900 dark:text-white">
                     {conversation.title || "Conversation"}
                   </h2>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
-            {conversation.offer && (
-              <Link href={`/offres/${conversation.offer.id}`}>
-                <Button variant="outline" size="sm">
-                  Voir l'offre
-                </Button>
-              </Link>
-            )}
+            <div className="flex items-center gap-2">
+              {conversation.offer && (
+                <Link href={`/offres/${conversation.offer.id}`}>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <ChevronRight className="h-3 w-3" />
+                    Voir l'offre
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
-      </header>
+      </header>{" "}
       {/* Messages */}
       <div className="flex-1 overflow-hidden relative z-10">
         <div className="container mx-auto max-w-4xl px-4 py-6 overflow-y-auto h-[calc(100vh-180px)]">
           {conversation.messages.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                Aucun message dans cette conversation.
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                <MessageSquare className="h-10 w-10 text-[#0ea5e9] opacity-70" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
+                Début de la conversation
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md">
+                C'est le début de votre conversation avec{" "}
+                {otherParticipant?.name || "cette personne"}.
                 <br />
-                Envoyez le premier message !
+                Envoyez un message pour commencer à discuter !
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {" "}
-              {conversation.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.senderId === session?.user?.id
-                      ? "justify-end"
-                      : "justify-start"
-                  }`}
+              <div className="flex justify-center mb-6">
+                <Badge
+                  variant="outline"
+                  className="bg-white/50 dark:bg-black/50 text-gray-500 dark:text-gray-400 font-normal"
                 >
-                  {/* Afficher l'avatar pour les messages des autres */}
-                  {message.senderId !== session?.user?.id && (
-                    <div className="mr-2">
-                      {message.sender.image ? (
-                        <Image
-                          src={message.sender.image}
-                          alt={message.sender.name || "Utilisateur"}
-                          width={24}
-                          height={24}
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white text-xs">
-                          {message.sender.name?.charAt(0).toUpperCase() || "U"}
-                        </div>
-                      )}
-                    </div>
+                  <Calendar className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                  Conversation démarrée le{" "}
+                  {new Date(conversation.createdAt).toLocaleDateString(
+                    "fr-FR",
+                    { day: "numeric", month: "long", year: "numeric" }
                   )}
+                </Badge>
+              </div>
+
+              {conversation.messages.map((message, index) => {
+                const isConsecutive =
+                  index > 0 &&
+                  conversation.messages[index - 1].senderId ===
+                    message.senderId;
+                const isSender = message.senderId === session?.user?.id;
+
+                return (
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      message.senderId === session?.user?.id
-                        ? "bg-[#0ea5e9] text-white rounded-br-none"
-                        : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-none"
-                    }`}
+                    key={message.id}
+                    className={`flex ${
+                      isSender ? "justify-end" : "justify-start"
+                    } ${isConsecutive ? "mt-1" : "mt-4"}`}
                   >
-                    {/* Nom de l'expéditeur si ce n'est pas l'utilisateur actuel */}
-                    {message.senderId !== session?.user?.id && (
-                      <div className="text-xs font-semibold mb-1 text-[#8b5cf6] dark:text-[#a78bfa]">
-                        {message.sender.name || "Utilisateur"}
+                    {/* Avatar pour les messages des autres */}
+                    {!isSender && !isConsecutive && (
+                      <div className="mr-2 flex-shrink-0">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={message.sender.image || ""}
+                            alt={message.sender.name || "Utilisateur"}
+                          />
+                          <AvatarFallback className="text-xs bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] text-white">
+                            {message.sender.name?.charAt(0).toUpperCase() ||
+                              "U"}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                     )}
-                    <div className="text-sm">{message.content}</div>
+
+                    {/* Espace pour aligner les messages consécutifs */}
+                    {!isSender && isConsecutive && (
+                      <div className="w-10 mr-2 flex-shrink-0"></div>
+                    )}
+
                     <div
-                      className={`text-xs mt-1 ${
-                        message.senderId === session?.user?.id
-                          ? "text-blue-100"
-                          : "text-gray-500 dark:text-gray-400"
-                      }`}
+                      className={`group relative max-w-[75%] rounded-2xl px-4 py-3 ${
+                        isSender
+                          ? "bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] text-white rounded-br-none"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-none"
+                      } ${isConsecutive ? "rounded-t-lg" : ""}`}
                     >
-                      {new Date(message.createdAt).toLocaleTimeString("fr-FR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {/* Nom de l'expéditeur si ce n'est pas l'utilisateur actuel et pas un message consécutif */}
+                      {!isSender && !isConsecutive && (
+                        <div className="text-xs font-medium mb-1 text-[#8b5cf6] dark:text-[#a78bfa]">
+                          {message.sender.name || "Utilisateur"}
+                        </div>
+                      )}
+
+                      <div className="text-sm whitespace-pre-wrap break-words">
+                        {message.content}
+                      </div>
+
+                      <div
+                        className={`flex items-center gap-1 text-xs mt-1 ${
+                          isSender
+                            ? "text-blue-100/80"
+                            : "text-gray-500 dark:text-gray-400"
+                        } opacity-70 group-hover:opacity-100 transition-opacity`}
+                      >
+                        {new Date(message.createdAt).toLocaleTimeString(
+                          "fr-FR",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                        {isSender && (
+                          <span className="ml-1">
+                            {message.isRead ? (
+                              <CheckCheck className="h-3 w-3" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+
               <div ref={bottomRef} />
             </div>
           )}
         </div>
-      </div>{" "}
-      {/* Message Input */}
-      <div className="relative z-10 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-800">
-        <div className="container mx-auto max-w-4xl px-4 py-3">
-          {userTyping && (
-            <div className="px-2 py-1 mb-2 text-xs text-[#8b5cf6] dark:text-[#a78bfa] font-medium animate-pulse">
+      </div>
+      {/* Typing Indicator */}
+      {userTyping && (
+        <div className="container mx-auto max-w-4xl px-4">
+          <div className="flex items-center pl-10 mb-2">
+            <div className="flex gap-1 items-center">
+              <div className="animate-bounce w-2 h-2 bg-[#8b5cf6] rounded-full delay-0"></div>
+              <div className="animate-bounce w-2 h-2 bg-[#8b5cf6] rounded-full delay-75"></div>
+              <div className="animate-bounce w-2 h-2 bg-[#8b5cf6] rounded-full delay-150"></div>
+            </div>
+            <div className="ml-2 text-xs text-[#8b5cf6] font-medium">
               {userTyping.username} est en train d'écrire...
             </div>
-          )}
-          <form onSubmit={handleSendMessage} className="flex items-center">
-            <input
-              type="text"
-              value={newMessage}
-              onChange={handleTyping}
-              placeholder="Votre message..."
-              className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] dark:focus:ring-[#0ea5e9]"
-            />
+          </div>
+        </div>
+      )}
+      {/* Message Input */}
+      <div className="sticky bottom-0 z-10 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
+        <div className="container mx-auto max-w-4xl px-4 py-3">
+          <form
+            onSubmit={handleSendMessage}
+            className="flex items-center gap-2"
+          >
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={handleTyping}
+                placeholder="Votre message..."
+                className="w-full bg-gray-100 dark:bg-gray-800/80 text-gray-900 dark:text-white rounded-full px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9] dark:focus:ring-[#0ea5e9]/70 transition-shadow"
+              />
+            </div>
             <Button
               type="submit"
               disabled={!newMessage.trim() || sending}
-              className="bg-[#0ea5e9] hover:bg-[#0ea5e9]/90 text-white rounded-l-none rounded-r-lg"
+              className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 transition-opacity text-white rounded-full w-10 h-10 flex items-center justify-center shrink-0"
+              aria-label="Envoyer le message"
             >
               {sending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5" />
               )}
             </Button>
           </form>
         </div>
       </div>
-      {/* Typing Indicator */}
-      {otherUserTyping && (
-        <div className="absolute left-0 right-0 bottom-16 z-10">
-          <div className="container mx-auto max-w-4xl px-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#1e40af] flex items-center justify-center text-white">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="animate-pulse h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M10 3a1 1 0 011 1v2a1 1 0 11-2 0V4a1 1 0 011-1zm0 10a1 1 0 011 1v2a1 1 0 11-2 0v-2a1 1 0 011-1zm7-5a1 1 0 00-1-1h-2a1 1 0 000 2h2a1 1 0 001-1zm-10 0a1 1 0 00-1-1H4a1 1 0 000 2h2a1 1 0 001-1zm10 7a1 1 0 00-1-1h-2a1 1 0 000 2h2a1 1 0 001-1zm-10 0a1 1 0 00-1-1H4a1 1 0 000 2h2a1 1 0 001-1z" />
-                </svg>
-              </div>
-              <div className="flex-1 text-gray-500 dark:text-gray-400 text-sm">
-                L'autre utilisateur est en train d'écrire...
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
