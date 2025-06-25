@@ -424,6 +424,7 @@ export default function OffersPage() {
         isOpen={isAIModalOpen}
         onClose={closeAIModal}
         categories={categories}
+        offers={offers}
         onApplySuggestion={(suggestedCategories) => {
           setSelectedCategories(suggestedCategories);
           applyFilters();

@@ -42,3 +42,55 @@ export async function improveFilter(userInput: string, categories: string[]): Pr
     const response = await result.response;
     return response.text();
 }
+
+export async function analyzeNeed(userInput: string): Promise<string> {
+    const prompt = `
+                Tu es un consultant expert qui aide à analyser et clarifier les besoins des clients.
+
+                Voici le besoin exprimé par un utilisateur : "${userInput}"
+
+                Ta mission est d'analyser ce besoin et de fournir un résumé en une ou deux phrases
+
+            `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+}
+
+export async function generateSuggestedServices(userInput: string): Promise<string[]> {
+    const prompt = `
+                Tu es un expert en analyse de besoins pour une plateforme de services.
+
+                Voici le besoin exprimé par un utilisateur : "${userInput}"
+
+                Ta mission est d'analyser ce besoin et de suggérer 3 à 5 services spécifiques qui pourraient répondre à cette demande.
+
+                Règles importantes :
+                - Retourne uniquement une liste de services, un par ligne
+                - Chaque service doit être précis et actionnable
+                - Les services doivent être complémentaires et logiques
+                - Utilise un vocabulaire professionnel
+                - Ne donne pas d'explication, juste la liste
+
+                Exemple de format attendu :
+                Développement Web Personnalisé
+                Optimisation SEO
+                Migration Cloud
+                Formation Utilisateurs
+                Maintenance et Support
+
+                Analyse maintenant le besoin et propose tes services suggérés :
+            `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+
+    const services = response.text()
+        .split('\n')
+        .map(service => service.trim())
+        .filter(service => service.length > 0)
+        .slice(0, 5);
+
+    return services;
+}

@@ -66,6 +66,14 @@ export default function Navbar() {
               >
                 Offres
               </Link>
+              {status === "authenticated" && (
+                <Link
+                  href="/contrats"
+                  className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                >
+                  Contrats
+                </Link>
+              )}
               {status === "authenticated" && <ConversationLink />}
             </div>
           </div>
@@ -226,6 +234,15 @@ export default function Navbar() {
             >
               Offres
             </Link>
+            {status === "authenticated" && (
+              <Link
+                href="/contrats"
+                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contrats
+              </Link>
+            )}
             {status === "authenticated" && (
               <ConversationLinkMobile onClose={() => setIsMenuOpen(false)} />
             )}
