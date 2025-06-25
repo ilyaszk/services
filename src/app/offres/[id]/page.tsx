@@ -246,7 +246,6 @@ export default function OfferDetailPage() {
             href="/offres"
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
           >
-            {" "}
             <ChevronLeft size={20} />
             Retour aux offres
           </Link>
@@ -359,7 +358,6 @@ export default function OfferDetailPage() {
               <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-8">
                 <div className="flex items-center gap-2">
                   <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
-                    {" "}
                     <DollarSign size={22} />
                   </div>
                   <div>
@@ -374,7 +372,6 @@ export default function OfferDetailPage() {
 
                 <div className="flex items-center gap-2">
                   <div className="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
-                    {" "}
                     <BookOpen size={22} />
                   </div>
                   <div>
@@ -389,7 +386,6 @@ export default function OfferDetailPage() {
 
                 <div className="flex items-center gap-2">
                   <div className="bg-emerald-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
-                    {" "}
                     <Clock size={22} />
                   </div>
                   <div>
@@ -414,7 +410,6 @@ export default function OfferDetailPage() {
                           window.location.href = url.toString();
                         }}
                       >
-                        {" "}
                         <Pencil size={18} />
                         Modifier
                       </button>
@@ -422,7 +417,6 @@ export default function OfferDetailPage() {
                         className="flex items-center gap-1.5 text-red-600 hover:text-red-800 font-medium border border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-900 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300 rounded-lg px-4 py-2 transition-colors"
                         onClick={() => setShowDeleteModal(true)}
                       >
-                        {" "}
                         <Trash2 size={18} />
                         Supprimer
                       </button>
@@ -436,7 +430,6 @@ export default function OfferDetailPage() {
               <div className="lg:col-span-2 space-y-10">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                    {" "}
                     <FileText size={20} className="mr-2" />
                     Description
                   </h2>
@@ -450,7 +443,6 @@ export default function OfferDetailPage() {
                 {offer.image && (
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                      {" "}
                       <Image size={20} className="mr-2" />
                       Photo
                     </h2>
@@ -467,7 +459,6 @@ export default function OfferDetailPage() {
                 {offer.title === "Translate File" && (
                   <div>
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                      {" "}
                       <Languages size={20} className="mr-2" />
                       Utiliser ce service
                     </h2>
@@ -494,7 +485,6 @@ export default function OfferDetailPage() {
                           type="submit"
                           className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5"
                         >
-                          {" "}
                           <Languages size={16} className="mr-2" />
                           Traduire
                         </Button>
@@ -502,7 +492,6 @@ export default function OfferDetailPage() {
                       {translationError && (
                         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600">
                           <p className="flex items-center">
-                            {" "}
                             <Eye size={16} className="mr-2" />
                             {translationError}
                           </p>
@@ -511,7 +500,6 @@ export default function OfferDetailPage() {
                       {translatedText && (
                         <div className="mt-6 p-6 border border-blue-100 dark:border-blue-900/30 rounded-xl bg-blue-50 dark:bg-blue-900/20">
                           <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center">
-                            {" "}
                             <Languages size={20} className="mr-2" />
                             Texte traduit
                           </h2>
@@ -534,7 +522,6 @@ export default function OfferDetailPage() {
                 {offer.author && (
                   <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                      {" "}
                       <User size={20} className="mr-2" />
                       Proposé par
                     </h3>
@@ -555,7 +542,6 @@ export default function OfferDetailPage() {
                           {offer.author.name || "Utilisateur anonyme"}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                          {" "}
                           <Mail size={14} className="mr-1" />
                           {offer.author.email}
                         </p>
@@ -578,7 +564,6 @@ export default function OfferDetailPage() {
                           className="w-full"
                         >
                           <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
-                            {" "}
                             <MessageSquare size={18} className="mr-2" />
                             Contacter le prestataire
                           </button>
@@ -586,13 +571,11 @@ export default function OfferDetailPage() {
                       )}
 
                       <button className="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
-                        {" "}
                         <Heart size={18} className="mr-2" />
                         Ajouter aux favoris
                       </button>
 
                       <button className="w-full border border-gray-200 hover:bg-gray-50 text-gray-700 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center">
-                        {" "}
                         <Share size={18} className="mr-2" />
                         Partager cette offre
                       </button>
@@ -607,22 +590,19 @@ export default function OfferDetailPage() {
                   </h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                      {" "}
                       <Heart size={16} />
                       <span>
-                        Recommandé par {Math.floor(Math.random() * 50) + 5}{" "}
+                        Recommandé par {Math.floor(Math.random() * 50) + 5}
                         utilisateurs
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                      {" "}
                       <Eye size={16} />
                       <span>
                         Consulté {Math.floor(Math.random() * 500) + 50} fois
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                      {" "}
                       <Star size={16} />
                       <span>
                         Note moyenne: {(Math.random() * 2 + 3).toFixed(1)}/5
@@ -640,7 +620,6 @@ export default function OfferDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full mx-4 animate-fade-in">
             <div className="flex items-center gap-4 mb-4 text-red-600">
-              {" "}
               <Trash2 size={24} />
               <h2 className="text-xl font-bold">Confirmer la suppression</h2>
             </div>
