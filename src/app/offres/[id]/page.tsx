@@ -376,9 +376,11 @@ export default function OfferDetailPage() {
                       </div>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-4">
-                        <button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors">
-                          Contacter le prestataire
-                        </button>
+                        {(!session?.user || offer.author?.id !== session.user.id) && (
+                          <button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors">
+                            Contacter le prestataire
+                          </button>
+                        )}
                         <button className="border border-gray-300 hover:bg-gray-50 text-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 py-3 px-6 rounded-lg font-medium transition-colors">
                           Ajouter aux favoris
                         </button>

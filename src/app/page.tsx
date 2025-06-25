@@ -1,7 +1,10 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function Home() {
+  const { status } = useSession();
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Hero Section */}
@@ -35,12 +38,14 @@ export default function Home() {
               >
                 Découvrir les offres
               </Link>
-              <Link
-                href="/api/auth/signin"
-                className="bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-lg text-center font-medium transition-colors"
-              >
-                Connexion →
-              </Link>
+              {status !== "authenticated" && (
+                <Link
+                  href="/api/auth/signin"
+                  className="bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-lg text-center font-medium transition-colors"
+                >
+                  Connexion →
+                </Link>
+              )}
             </div>
           </div>
           <div className="relative mx-auto max-w-5xl">
