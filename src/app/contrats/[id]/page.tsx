@@ -39,7 +39,7 @@ interface Contract {
     estimatedDuration: string;
     status: string;
     createdAt: string;
-    contractSteps: ContractStep[];
+    steps: ContractStep[];
     client: {
         id: string;
         name: string | null;
@@ -181,7 +181,7 @@ export default function ContractDetailPage() {
         );
     }
 
-    const realOffersCount = contract.contractSteps.filter(step => step.isRealOffer).length;
+    const realOffersCount = contract.steps.filter(step => step.isRealOffer).length;
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -228,7 +228,7 @@ export default function ContractDetailPage() {
                         <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Étapes totales</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {contract.contractSteps.length}
+                                {contract.steps.length}
                             </p>
                         </div>
                         <div>
@@ -258,7 +258,7 @@ export default function ContractDetailPage() {
                     Étapes du contrat
                 </h2>
 
-                {contract.contractSteps.map((step, index) => (
+                {contract.steps.map((step, index) => (
                     <Card key={step.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                             <div className="flex items-start justify-between">

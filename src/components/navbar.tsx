@@ -67,22 +67,22 @@ export default function Navbar() {
                 Offres
               </Link>
               {status === "authenticated" && (
-               <Link
-                  href="/contrats"
-                  className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-                >
-                  Contrats
-                </Link>
-                {
-                  session?.user?.role === "Client" && (
+                <>
+                  <Link
+                    href="/contrats"
+                    className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+                  >
+                    Contrats
+                  </Link>
+                  {session?.user?.role === "Client" && (
                     <Link
                       href="/offres/mes-offres"
                       className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
                     >
-                  Mes Offres
-                </Link>
-                  )
-                }
+                      Mes Offres
+                    </Link>
+                  )}
+                </>
               )}
               {status === "authenticated" && <ConversationLink />}
             </div>
