@@ -93,6 +93,17 @@ async function main() {
       console.log("Offre créée:", createdOffer);
     }
 
+    const createdTranslate = await prisma.offer.create({
+      data: {
+        title: "Translate File",
+        description: "Translate a file from French to English.",
+        price: 10,
+        category: "Translation",
+        image: "/file.svg",
+      },
+    });
+    console.log("Offre de traduction créée:", createdTranslate);
+
     console.log("Seeding terminé avec succès!");
   } catch (error) {
     console.error("Erreur pendant le seeding:", error);

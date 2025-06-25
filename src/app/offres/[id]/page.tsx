@@ -1,396 +1,489 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "next-auth/react";
-import { off } from "process";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  ChevronLeft,
+  DollarSign,
+  BookOpen,
+  Clock,
+  Pencil,
+  Trash2,
+  Image,
+  Languages,
+  MessageSquare,
+  Heart,
+  Share,
+  User,
+  Mail,
+  Eye,
+  Star,
+  FileText,
+} from "lucide-react";
 
 interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  image?: string | null;
+  createdAt: string;
+  author?: {
     id: string;
-    title: string;
-    description: string;
-    price: number;
-    category: string;
-    image?: string | null;
-    createdAt: string;
-    author?: {
-        id: string;
-        name: string | null;
-        email: string | null;
-        image: string | null;
-    } | null;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  } | null;
 }
 
 export default function OfferDetailPage() {
-    const params = useParams();
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const { data: session } = useSession();
-    const [offer, setOffer] = useState<Offer | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [editMode, setEditMode] = useState(false);    const [form, setForm] = useState({
-        title: "",
-        description: "",
-        price: 0,
-        category: "",
-        image: ""
-    });
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [deleteError, setDeleteError] = useState<string | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const [offer, setOffer] = useState<Offer | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-    // Fonction pour récupérer l'offre spécifique
-    async function fetchOffer() {
-        setLoading(true);
-        setError(null);
+  // State for translation feature
+  const [file, setFile] = useState<File | null>(null);
+  const [translatedText, setTranslatedText] = useState("");
+  const [translationError, setTranslationError] = useState("");
 
-        // Ensure params.id exists before making the request
-        const offerId = params?.id;
-        if (!offerId) {
-            setError("ID de l'offre manquant");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch(`/api/offers/${offerId}`);
-
-            if (!response.ok) {
-                if (response.status === 404) {
-                    throw new Error("Cette offre n'existe pas ou a été supprimée");
-                }
-                throw new Error("Problème lors de la récupération de l'offre");
-            }
-
-            const data: Offer = await response.json();
-            setOffer(data);
-        } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Erreur lors du chargement de l'offre"
-            );
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
+  async function fetchOffer() {
+    setLoading(true);
+    setError(null);
+    const offerId = params?.id;
+    if (!offerId) {
+      setError("ID de l'offre manquant");
+      setLoading(false);
+      return;
     }
-
-    useEffect(() => {
-        if (params?.id) {
-            fetchOffer();
-        }
-    }, [params]);    useEffect(() => {
-        if (offer) {
-            setForm({
-                title: offer.title,
-                description: offer.description,
-                price: offer.price,
-                category: offer.category,
-                image: offer.image || ""
-            });
-        }
-    }, [offer]);
-
-    useEffect(() => {
-        // Activer le mode édition si ?edit=1 et droits
-        if (
-            searchParams?.get("edit") === "1" &&
-            offer &&
-            session?.user &&
-            (session.user.role === "Admin" || offer.author?.id === session.user.id)
-        ) {
-            setEditMode(true);
-        } else {
-            setEditMode(false);
-        }
-    }, [searchParams, offer, session]);
-
-    async function handleEditSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        try {
-            const response = await fetch(`/api/offers/${offer?.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form }),
-            });
-            if (response.ok) {
-                setEditMode(false);
-                router.push("/offres");
-            } else {
-                alert("Erreur lors de la modification");
-            }
-        } catch (err) {
-            alert("Erreur lors de la modification");
-        }
+    try {
+      const response = await fetch(`/api/offers/${offerId}`);
+      if (!response.ok) {
+        if (response.status === 404)
+          throw new Error("Cette offre n'existe pas ou a été supprimée");
+        throw new Error("Problème lors de la récupération de l'offre");
+      }
+      const data: Offer = await response.json();
+      setOffer(data);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Erreur lors du chargement de l'offre"
+      );
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    async function handleDelete() {
-        setDeleteError(null);
-        try {
-            const response = await fetch(`/api/offers/${offer?.id}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                setShowDeleteModal(false);
-                router.push("/offres");
-            } else {
-                setDeleteError("Erreur lors de la suppression de l'offre");
-            }
-        } catch (err) {
-            setDeleteError("Erreur lors de la suppression");
-        }
+  useEffect(() => {
+    if (params?.id) {
+      fetchOffer();
     }
+  }, [params]);
 
-    if (loading) {
-        return (
-            <div className= "min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center" >
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600" >
-                { " "}
-                </div>
-                </div>
-    );
+  async function handleDelete() {
+    setDeleteError(null);
+    try {
+      const response = await fetch(`/api/offers/${offer?.id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setShowDeleteModal(false);
+        router.push("/offres");
+      } else {
+        setDeleteError("Erreur lors de la suppression de l'offre");
+      }
+    } catch (err) {
+      setDeleteError("Erreur lors de la suppression");
     }
+  }
 
-    if (error) {
-        return (
-            <div className= "min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center" >
-            <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg max-w-md" >
-                <h2 className="text-xl font-bold mb-2" > Erreur </h2>
-                    < p > { error } </p>
-                    < Link
-        href = "/offres"
-        className = "inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-            >
-            Retour aux offres
-                </Link>
-                </div>
-                </div>
-    );
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
     }
+  };
 
-    if (!offer) {
-        return (
-            <div className= "min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center" >
-            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-lg max-w-md" >
-                <h2 className="text-xl font-bold mb-2" > Offre non trouvée </h2>
-                    < p > Cette offre n'existe pas ou a été supprimée.</p>
-                        < Link
-        href = "/offres"
-        className = "inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-            >
-            Retour aux offres
-                </Link>
-                </div>
-                </div>
-    );
+  const handleTranslateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setTranslationError("");
+    setTranslatedText("");
+    if (!file) {
+      setTranslationError("Please select a file");
+      return;
     }
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await fetch("/api/translate", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to translate");
+      }
+      const data = await response.json();
+      setTranslatedText(data.translatedText);
+    } catch (err) {
+      setTranslationError("An error occurred while translating the file.");
+    }
+  };
 
+  if (loading) {
     return (
-        <div className= "min-h-screen bg-gray-50 dark:bg-gray-900" >
-        {/* Header */ }
-        < header className = "bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] text-white py-8" >
-            <div className="container mx-auto px-6 md:px-12" >
-                { " "}
-                < Link
-    href = "/offres"
-    className = "inline-flex items-center text-blue-100 hover:text-white mb-4 transition-colors"
-        >
-            ← Retour aux offres
-        </Link>
-        < h1 className = "text-3xl md:text-4xl font-bold" > { offer.title } </h1>
-            </div>
-            </header>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-    {/* Offer Details */ }
-    <section className="container mx-auto px-6 md:px-12 py-12" >
-        <div className="max-w-4xl mx-auto" >
-            { " "}
-            < div className = "bg-white dark:bg-gray-800 rounded-lg shadow-lg shadow-gray-200/50 dark:shadow-none overflow-hidden" >
-                <div className="p-8" >
-                {
-                    editMode?(
-                <form onSubmit = { handleEditSubmit } className = "space-y-4" >
-                            <input
-                    className="w-full p-2 border rounded"
-                        name = "title"
-                    value = { form.title }
-                    onChange = { e => setForm(f => ({ ...f, title: e.target.value }))
-                }
-    required
-        />
-        <textarea
-                    className="w-full p-2 border rounded"
-    name = "description"
-    value = { form.description }
-    onChange = { e => setForm(f => ({ ...f, description: e.target.value }))
-}
-rows = { 4}
-required
-    />
-    <input
-                    className="w-full p-2 border rounded"
-name = "price"
-type = "number"
-value = { form.price }
-onChange = { e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-required
-    />
-    <input
-                    className="w-full p-2 border rounded"
-name = "category"
-value = { form.category }
-onChange = { e => setForm(f => ({ ...f, category: e.target.value }))}
-required
-    />
-    <div className="flex gap-4" >
-        <button type="submit" className = "bg-blue-600 text-white px-4 py-2 rounded" > Enregistrer </button>
-            < button type = "button" className = "bg-gray-400 text-white px-4 py-2 rounded" onClick = {() => setEditMode(false)}> Annuler </button>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg max-w-md">
+          <h2 className="text-xl font-bold mb-2">Erreur</h2>
+          <p>{error}</p>
+          <Link
+            href="/offres"
+            className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+          >
+            Retour aux offres
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!offer) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
+        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-6 py-4 rounded-lg max-w-md">
+          <h2 className="text-xl font-bold mb-2">Offre non trouvée</h2>
+          <p>Cette offre n'existe pas ou a été supprimée.</p>
+          <Link
+            href="/offres"
+            className="inline-block mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+          >
+            Retour aux offres
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 md:px-8 py-8">
+        <div className="mb-6">
+          <Link
+            href="/offres"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+          >
+            <ChevronLeft size={20} />
+            Retour aux offres
+          </Link>
+        </div>
+
+        {/* Header avec titre et informations clés */}
+        <div className="max-w-6xl mx-auto mb-12">
+          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-8">
+            {offer.title}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-x-12 gap-y-6 mb-8">
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
+                <DollarSign size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Prix
                 </div>
-                </form>
-              ) : (
-    <>
-    {/* Header Info */ }
-    < div className = "flex flex-col md:flex-row md:items-center md:justify-between mb-6" >
-        <div className="flex items-center gap-4 mb-4 md:mb-0" >
-            <span className="bg-blue-100 text-[#1e40af] text-sm font-medium px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-300" >
-                { offer.category }
-                </span>
-                < span className = "text-2xl font-bold text-gray-900 dark:text-white" >
-                    { offer.price } €
-</span>
-    </div>
-    < div className = "text-sm text-gray-500 dark:text-gray-400" >
-        Publié le{ " " }
-{ new Date(offer.createdAt).toLocaleDateString("fr-FR") }
-</div>
-    </div>
-
-{/* Description */ }
-<div className="mb-8" >
-    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4" >
-        Description
-        </h2>
-        < p className = "text-gray-600 dark:text-gray-300 leading-relaxed" >
-            { offer.description }
-            </p>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {offer.price} €
+                </div>
+              </div>
             </div>
 
-{
-    offer.image && (
-        <div className="mb-8" >
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4" >
-                Photo
-                </h2>
-                < div className = "relative w-full h-64 md:h-96 rounded-lg overflow-hidden" >
-                    <img
-                          src={ offer.image }
-    alt = { offer.title }
-    className = "w-full h-full object-cover"
-        />
-        </div>
-        </div>
-                  )
-}
+            <div className="flex items-center gap-2">
+              <div className="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
+                <BookOpen size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Catégorie
+                </div>
+                <div className="text-gray-900 dark:text-white font-medium">
+                  {offer.category}
+                </div>
+              </div>
+            </div>
 
-{/* Author Info */ }
-{
-    offer.author && (
-        <div className="border-t pt-6" >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3" >
-                Proposé par
-                    </h3>
-                    < div className = "flex items-center gap-4" >
-                    {
-                        offer.author.image && (
-                            <img
-                            src={ offer.author.image }
-    alt = { offer.author.name || "Avatar" }
-    className = "w-12 h-12 rounded-full"
-        />
-                        )
-}
-<div>
-    <p className="font-medium text-gray-900 dark:text-white" >
-        { offer.author.name || "Utilisateur anonyme" }
-        </p>
-        < p className = "text-sm text-gray-500 dark:text-gray-400" >
-            { offer.author.email }
-            </p>
+            <div className="flex items-center gap-2">
+              <div className="bg-emerald-600 w-12 h-12 rounded-full flex items-center justify-center text-white">
+                <Clock size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Publié le
+                </div>
+                <div className="text-gray-900 dark:text-white font-medium">
+                  {new Date(offer.createdAt).toLocaleDateString("fr-FR")}
+                </div>
+              </div>
             </div>
-            </div>
-            </div>
-                  )}
 
-{/* Action Buttons */ }
-<div className="flex flex-col sm:flex-row gap-4 mt-8 items-center justify-between" >
-    <div className="flex flex-col sm:flex-row gap-4" >
-        <button className="bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6] hover:opacity-90 text-white py-3 px-6 rounded-lg font-medium transition-colors" >
-            Contacter le prestataire
-                </button>
-                < button className = "border border-gray-300 hover:bg-gray-50 text-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 py-3 px-6 rounded-lg font-medium transition-colors" >
-                    Ajouter aux favoris
-                        </button>
-                        </div>
-{
-    (!editMode && session?.user && (session.user.role === "Admin" || offer.author?.id === session.user.id)) && (
-        <div className="flex gap-2 items-center" >
-            <button
-                          className="ml-auto border border-[#0ea5e9] text-[#0ea5e9] bg-white hover:bg-[#e0f2fe] py-3 px-6 rounded-lg font-medium transition-colors"
-    style = {{ minWidth: 120 }
-}
-onClick = {() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("edit", "1");
-    window.location.href = url.toString();
-}}
-                        >
-    Modifier
-    </button>
-    < button
-className = "ml-2 border border-red-500 text-red-500 bg-white hover:bg-red-50 py-3 px-6 rounded-lg font-medium transition-colors"
-style = {{ minWidth: 120 }}
-onClick = {() => setShowDeleteModal(true)}
-                        >
-    Supprimer
-    </button>
-    </div>
-                    )}
-</div>
-    </>
+            {session?.user &&
+              (session.user.role === "Admin" ||
+                offer.author?.id === session.user.id) && (
+                <div className="flex gap-3 ml-auto">
+                  <Link
+                    href={`/offres/${offer.id}/edit`}
+                    className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium border border-blue-200 bg-blue-50 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 dark:hover:text-blue-300 rounded-lg px-4 py-2 transition-colors"
+                  >
+                    <Pencil size={18} />
+                    Modifier
+                  </Link>
+                  <button
+                    className="flex items-center gap-1.5 text-red-600 hover:text-red-800 font-medium border border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-900 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300 rounded-lg px-4 py-2 transition-colors"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Trash2 size={18} />
+                    Supprimer
+                  </button>
+                </div>
               )}
-</div>
-    </div>
-    </div>
-    </section>
+          </div>
+        </div>
 
-{/* Modale de suppression */ }
-{
-    showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40" >
-            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full" >
-                <h2 className="text-xl font-bold mb-4 text-red-600" > Confirmer la suppression </h2>
-                    < p className = "mb-6" > Voulez - vous vraiment supprimer cette offre ? Cette action est irréversible.</p>
-    { deleteError && <div className="text-red-500 mb-4" > { deleteError } </div> }
-    <div className="flex justify-end gap-4" >
-        <button
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
-    onClick = {() => setShowDeleteModal(false)
-}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* Colonne principale avec description et image */}
+          <div className="lg:col-span-2 space-y-10">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <FileText size={20} className="mr-2" />
+                Description
+              </h2>
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <p className="text-gray-700 dark:text-gray-200 leading-relaxed text-lg">
+                  {offer.description}
+                </p>
+              </div>
+            </div>
+
+            {offer.image && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Image size={20} className="mr-2" />
+                  Photo
+                </h2>
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                  <img
+                    src={offer.image}
+                    alt={offer.title}
+                    className="w-full h-auto rounded-lg shadow-md"
+                  />
+                </div>
+              </div>
+            )}
+
+            {offer.title === "Translate File" && (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Languages size={20} className="mr-2" />
+                  Utiliser ce service
+                </h2>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                  <form onSubmit={handleTranslateSubmit} className="space-y-5">
+                    <div>
+                      <Label
+                        htmlFor="file"
+                        className="text-gray-700 dark:text-gray-200 mb-2 block font-medium"
+                      >
+                        Fichier à traduire
+                      </Label>
+                      <Input
+                        id="file"
+                        type="file"
+                        onChange={handleFileChange}
+                        className="mt-1 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5"
+                    >
+                      <Languages size={16} className="mr-2" />
+                      Traduire
+                    </Button>
+                  </form>
+                  {translationError && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600">
+                      <p className="flex items-center">
+                        <Eye size={16} className="mr-2" />
+                        {translationError}
+                      </p>
+                    </div>
+                  )}
+                  {translatedText && (
+                    <div className="mt-6 p-6 border border-blue-100 dark:border-blue-900/30 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                      <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100 flex items-center">
+                        <Languages size={20} className="mr-2" />
+                        Texte traduit
+                      </h2>
+                      <Textarea
+                        value={translatedText as string}
+                        readOnly
+                        rows={10}
+                        className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Colonne latérale avec auteur et actions */}
+          <div className="space-y-8">
+            {/* Auteur */}
+            {offer.author && (
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <User size={20} className="mr-2" />
+                  Proposé par
+                </h3>
+                <div className="flex items-center gap-4">
+                  {offer.author.image ? (
+                    <img
+                      src={offer.author.image}
+                      alt={offer.author.name || "Avatar"}
+                      className="w-16 h-16 rounded-full border-2 border-white dark:border-gray-800 shadow-md"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <User
+                        size={24}
+                        className="text-gray-500 dark:text-gray-400"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {offer.author.name || "Utilisateur"}
+                    </p>
+                    {offer.author.email && (
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                        <Mail size={14} className="mr-1" />
+                        {offer.author.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            {!offer.title.includes("Translate File") && (
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  Actions rapides
+                </h3>
+                <div className="space-y-3">
+                  <Link
+                    href={`/conversations/new/${offer.id}`}
+                    className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+                  >
+                    <MessageSquare size={16} />
+                    Contacter le prestataire
+                  </Link>
+
+                  <button className="flex items-center justify-center gap-2 w-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                    <Heart size={16} />
+                    Sauvegarder
+                  </button>
+
+                  <button className="flex items-center justify-center gap-2 w-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-4 rounded-lg transition-colors">
+                    <Share size={16} />
+                    Partager
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                <Star size={20} className="mr-2 text-yellow-500" />
+                Statistiques
+              </h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">Vues</span>
+                  <span className="font-medium text-gray-900 dark:text-white flex items-center">
+                    <Eye size={16} className="mr-1.5 text-blue-600" /> 142
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Création
+                  </span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {new Date(offer.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md w-full mx-4 animate-fade-in">
+            <div className="flex items-center gap-4 mb-4 text-red-600">
+              <Trash2 size={24} />
+              <h2 className="text-xl font-bold">Confirmer la suppression</h2>
+            </div>
+            <p className="mb-6 text-gray-700 dark:text-gray-300">
+              Voulez-vous vraiment supprimer cette offre ? Cette action est
+              irréversible.
+            </p>
+            {deleteError && (
+              <div className="p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg text-red-600 dark:text-red-400">
+                {deleteError}
+              </div>
+            )}
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
               >
-    Annuler
-    </button>
-    < button
-className = "px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-onClick = { handleDelete }
-    >
-    Supprimer
-    </button>
-    </div>
-    </div>
-    </div>
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Supprimer
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
-</div>
+    </div>
   );
 }
