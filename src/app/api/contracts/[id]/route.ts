@@ -24,7 +24,7 @@ export async function GET(
                 clientId: session.user.id // Voir seulement ses propres contrats
             },
             include: {
-                contractSteps: {
+                steps: {
                     include: {
                         offer: {
                             include: {

@@ -117,8 +117,8 @@ export default function ContractsPage() {
     };
 
     const getUserRoleInContract = (contract: Contract) => {
-        const isClient = contract.client?.id === session?.user?.id;
-        const isProvider = contract.steps?.some(step => step.provider?.id === session?.user?.id);
+        const isClient = contract.client.id === session?.user?.id;
+        const isProvider = contract.steps.some(step => step.provider?.id === session?.user?.id);
 
         if (isClient) return 'client';
         if (isProvider) return 'provider';

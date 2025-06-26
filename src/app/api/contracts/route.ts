@@ -25,41 +25,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-        // Créer le contrat principal
-        const contract = await prisma.contract.create({
-            data: {
-                title: servicePathData.name,
-                description: servicePathData.description,
-                totalPrice: servicePathData.totalPrice,
-                estimatedDuration: servicePathData.estimatedDuration,
-                clientId: session.user.id,
-                servicePathId: servicePathData.id,
-                contractSteps: {
-                    create: servicePathData.steps.map((step: any) => ({
-                        name: step.name,
-                        description: step.description,
-                        price: step.price,
-                        duration: step.duration,
-                        isRealOffer: step.isRealOffer,
-                        offerId: step.offerId || null,
-                        providerId: step.author?.id || null,
-                    }))
-                }
+    // Créer le contrat principal
+    const contract = await prisma.contract.create({
+      data: {
+        title: servicePathData.name,
+        description: servicePathData.description,
+        totalPrice: servicePathData.totalPrice,
+        estimatedDuration: servicePathData.estimatedDuration,
+        clientId: session.user.id,
+        servicePathId: servicePathData.id,
+        steps: {
+          create: servicePathData.steps.map((step: any) => ({
+            name: step.name,
+            description: step.description,
+            price: step.price,
+            duration: step.duration,
+            isRealOffer: step.isRealOffer,
+            offerId: step.offerId || null,
+            providerId: step.isRealOffer && step.author?.id ? step.author.id : null,
+          })),
+        },
+      },
+      include: {
+        steps: {
+          include: {
+            offer: {
+              include: {
+                author: true,
+              },
             },
-            include: {
-                contractSteps: {
-                    include: {
-                        offer: {
-                            include: {
-                                author: true
-                            }
-                        },
-                        provider: true
-                    }
-                },
-                client: true
-            }
-        });
+            provider: true,
+          },
+        },
+        client: true,
+      },
+    });
+
+    // Émettre des notifications Socket.io pour chaque prestataire concerné
+    const io = getSocketServer();
+    const uniqueProviders = new Set<string>();
+
+    contract.steps.forEach((step) => {
+      if (step.providerId && !uniqueProviders.has(step.providerId)) {
+        uniqueProviders.add(step.providerId);
+
+        // Calculer les informations de notification pour ce prestataire
+        const providerSteps = contract.steps.filter(s => s.providerId === step.providerId);
+        const notification = {
+          contractId: contract.id,
+          contractTitle: contract.title,
+          clientName: contract.client.name || contract.client.email,
+          clientEmail: contract.client.email,
+          pendingStepsCount: providerSteps.length,
+          totalValue: providerSteps.reduce((sum, s) => sum + s.price, 0),
+          createdAt: contract.createdAt.toISOString(),
+        };
+
+        emitContractNotification(io, step.providerId, notification);
+      }
+    });
 
     return NextResponse.json(contract);
   } catch (error) {
@@ -83,26 +107,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
-        const contracts = await prisma.contract.findMany({
-            where: {
-                clientId: session.user.id
+    const contracts = await prisma.contract.findMany({
+      where: {
+        OR: [
+          {
+            clientId: session.user.id,
+          },
+          {
+            steps: {
+              some: {
+                providerId: session.user.id,
+              },
             },
-            include: {
-                contractSteps: {
-                    include: {
-                        offer: {
-                            include: {
-                                author: true
-                            }
-                        },
-                        provider: true
-                    }
-                }
+          },
+        ],
+      },
+      include: {
+        steps: {
+          include: {
+            offer: {
+              include: {
+                author: true,
+              },
             },
-            orderBy: {
-                createdAt: 'desc'
-            }
-        });
+            provider: true,
+          },
+        },
+        client: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     return NextResponse.json(contracts);
   } catch (error) {

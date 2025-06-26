@@ -17,7 +17,7 @@ export async function GET() {
         status: { in: ["PENDING", "IN_PROGRESS"] }
       },
       include: {
-        contractSteps: {
+        steps: {
           include: {
             provider: {
               select: {

@@ -40,7 +40,7 @@ interface Contract {
     estimatedDuration: string;
     status: string;
     createdAt: string;
-    contractSteps: ContractStep[];
+    steps: ContractStep[];
     client: {
         id: string;
         name: string | null;
@@ -143,7 +143,7 @@ export default function ContractDetailPage() {
 
     const getUserRoleInContract = (contract: Contract) => {
         const isClient = contract.client.id === session?.user?.id;
-        const isProvider = contract.contractSteps.some(step => step.provider?.id === session?.user?.id);
+        const isProvider = contract.steps.some(step => step.provider?.id === session?.user?.id);
 
         if (isClient) return 'client';
         if (isProvider) return 'provider';
@@ -233,7 +233,7 @@ export default function ContractDetailPage() {
         );
     }
 
-    const realOffersCount = contract.contractSteps.filter(step => step.isRealOffer).length;
+    const realOffersCount = contract.steps.filter(step => step.isRealOffer).length;
     const userRole = getUserRoleInContract(contract);
     const roleInfo = getRoleLabel(userRole);
 
@@ -293,7 +293,7 @@ export default function ContractDetailPage() {
                         <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Étapes totales</p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {contract.contractSteps.length}
+                                {contract.steps.length}
                             </p>
                         </div>
                         <div>
@@ -323,7 +323,7 @@ export default function ContractDetailPage() {
                     Étapes du contrat
                 </h2>
 
-                {contract.contractSteps.map((step, index) => (
+                {contract.steps.map((step, index) => (
                     <Card key={step.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                             <div className="flex items-start justify-between">
