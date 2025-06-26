@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { PlusCircle, Filter, Loader2, Pencil, XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import AIModal from "@/app/components/AIModal";
 
 interface Offer {
   id: string;
@@ -39,6 +40,9 @@ export default function OffersPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<number>(2000);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+  // État pour le modal IA
+  const [isAIModalOpen, setIsAIModalOpen] = useState<boolean>(false);
 
   const { data: session } = useSession();
 
@@ -125,6 +129,16 @@ export default function OffersPage() {
     }
   }
 
+  // Fonction pour ouvrir le modal IA
+  const openAIModal = () => {
+    setIsAIModalOpen(true);
+  };
+
+  // Fonction pour fermer le modal IA
+  const closeAIModal = () => {
+    setIsAIModalOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white">
       {/* Background Effects */}
@@ -206,9 +220,26 @@ export default function OffersPage() {
                     Filtres
                   </h2>
                 </CardHeader>
-                <CardContent className="pt-6">
+
+                {/* IA Suggestion Button */}
+                <div className="flex justify-center px-[3%] w-full">
+                  <Button
+                    onClick={openAIModal}
+                    className="w-[90%] bg-gradient-to-r from-[#8b5cf6] to-[#0ea5e9] hover:opacity-90 transition-opacity text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mr-2">
+                      <path d="M12 8V16" />
+                      <path d="M8 12H16" />
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M22 12c0 5.523-4.477 10-10 10a9.956 9.956 0 0 1-7.156-3" />
+                    </svg>
+                    Demander à l'IA
+                  </Button>
+                </div>
+
+                <CardContent className="pt-2">
                   {/* Category filter */}
-                  <div className="mb-6">
+                  <div className="mb-4 mt-4">
                     <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Catégories
                     </h3>
@@ -306,14 +337,19 @@ export default function OffersPage() {
                           <button
                             title="Modifier"
                             className="absolute top-2 left-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-blue-100 dark:hover:bg-blue-900"
-                            onClick={() => window.location.href = `/offres/${offer.id}?edit=1`}
+                            onClick={() =>
+                              (window.location.href = `/offres/${offer.id}/edit`)
+                            }
                           >
                             <Pencil className="w-5 h-5 text-blue-600" />
                           </button>
                           <button
                             title="Supprimer"
                             className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-red-100 dark:hover:bg-red-900"
-                            onClick={() => { setShowDeleteModal(true); setDeleteOfferId(offer.id); }}
+                            onClick={() => {
+                              setShowDeleteModal(true);
+                              setDeleteOfferId(offer.id);
+                            }}
                           >
                             <XCircle className="w-5 h-5 text-red-600" />
                           </button>
@@ -367,13 +403,23 @@ export default function OffersPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
-            <p className="mb-6">Voulez-vous vraiment supprimer cette offre ? Cette action est irréversible.</p>
-            {deleteError && <div className="text-red-500 mb-4">{deleteError}</div>}
+            <h2 className="text-xl font-bold mb-4 text-red-600">
+              Confirmer la suppression
+            </h2>
+            <p className="mb-6">
+              Voulez-vous vraiment supprimer cette offre ? Cette action est
+              irréversible.
+            </p>
+            {deleteError && (
+              <div className="text-red-500 mb-4">{deleteError}</div>
+            )}
             <div className="flex justify-end gap-4">
               <button
                 className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
-                onClick={() => { setShowDeleteModal(false); setDeleteOfferId(null); }}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteOfferId(null);
+                }}
               >
                 Annuler
               </button>
@@ -387,6 +433,18 @@ export default function OffersPage() {
           </div>
         </div>
       )}
+
+      {/* Modal IA */}
+      <AIModal
+        isOpen={isAIModalOpen}
+        onClose={closeAIModal}
+        categories={categories}
+        offers={offers}
+        onApplySuggestion={(suggestedCategories) => {
+          setSelectedCategories(suggestedCategories);
+          applyFilters();
+        }}
+      />
     </div>
   );
 }
