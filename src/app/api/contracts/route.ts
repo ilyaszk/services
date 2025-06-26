@@ -140,7 +140,24 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(contracts);
+    // Filtrer les étapes selon le rôle de l'utilisateur
+    const filteredContracts = contracts.map(contract => {
+      const isClient = contract.clientId === session.user.id;
+      const isProvider = contract.steps.some(step => step.providerId === session.user.id);
+
+      // Si c'est un prestataire et pas le client, ne montrer que ses étapes
+      if (isProvider && !isClient) {
+        return {
+          ...contract,
+          steps: contract.steps.filter(step => step.providerId === session.user.id)
+        };
+      }
+
+      // Si c'est le client, montrer toutes les étapes
+      return contract;
+    });
+
+    return NextResponse.json(filteredContracts);
   } catch (error) {
     console.error("Erreur lors de la récupération des contrats:", error);
     return NextResponse.json(

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { formatDate } from "@/lib/date-utils";
 
 interface ContractStep {
     id: string;
@@ -14,6 +15,8 @@ interface ContractStep {
     duration: string;
     isRealOffer: boolean;
     status: string;
+    clientSignedAt: string | null;
+    providerSignedAt: string | null;
     offer?: {
         id: string;
         title: string;
@@ -38,6 +41,8 @@ interface Contract {
     estimatedDuration: string;
     status: string;
     createdAt: string;
+    clientSignedAt: string | null;
+    allStepsSignedAt: string | null;
     steps: ContractStep[];
     client: {
         id: string;
@@ -88,14 +93,22 @@ export default function ContractsPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending':
+            case 'PENDING':
                 return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-            case 'accepted':
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            case 'rejected':
-                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-            case 'completed':
+            case 'CLIENT_SIGNED':
                 return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            case 'FULLY_SIGNED':
+                return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+            case 'ACCEPTED':
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            case 'SIGNED':
+                return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+            case 'REJECTED':
+                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+            case 'COMPLETED':
+                return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+            case 'IN_PROGRESS':
+                return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             default:
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
         }
@@ -103,14 +116,22 @@ export default function ContractsPage() {
 
     const getStatusText = (status: string) => {
         switch (status) {
-            case 'pending':
+            case 'PENDING':
                 return 'En attente';
-            case 'accepted':
+            case 'CLIENT_SIGNED':
+                return 'Signé par le client';
+            case 'FULLY_SIGNED':
+                return 'Entièrement signé';
+            case 'ACCEPTED':
                 return 'Accepté';
-            case 'rejected':
+            case 'SIGNED':
+                return 'Signé';
+            case 'REJECTED':
                 return 'Rejeté';
-            case 'completed':
+            case 'COMPLETED':
                 return 'Terminé';
+            case 'IN_PROGRESS':
+                return 'En cours';
             default:
                 return status;
         }
@@ -241,7 +262,7 @@ export default function ContractsPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-500 dark:text-gray-400">Créé le:</span>
                                         <span className="text-sm text-gray-900 dark:text-white">
-                                            {new Date(contract.createdAt).toLocaleDateString('fr-FR')}
+                                            {formatDate(contract.createdAt, { short: true })}
                                         </span>
                                     </div>
                                 </div>

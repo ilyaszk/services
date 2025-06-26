@@ -86,14 +86,22 @@ export async function PATCH(
 
     let newContractStatus = contract.status;
 
+    // Si toutes les étapes sont signées par les deux parties, marquer le contrat comme entièrement signé
+    if (allSteps.every((step) => step.clientSignedAt && step.providerSignedAt)) {
+      newContractStatus = "FULLY_SIGNED";
+    }
+    // Si le client a signé mais pas tous les prestataires, marquer comme "CLIENT_SIGNED"
+    else if (contract.clientSignedAt && allSteps.some((step) => !step.providerSignedAt)) {
+      newContractStatus = "CLIENT_SIGNED";
+    }
     // Si toutes les étapes sont terminées, marquer le contrat comme terminé
-    if (allSteps.every((step) => step.status === "COMPLETED")) {
+    else if (allSteps.every((step) => step.status === "COMPLETED")) {
       newContractStatus = "COMPLETED";
     }
     // Si au moins une étape est acceptée, marquer le contrat comme en cours
     else if (
       allSteps.some(
-        (step) => step.status === "ACCEPTED" || step.status === "COMPLETED"
+        (step) => step.status === "ACCEPTED" || step.status === "COMPLETED" || step.status === "SIGNED"
       )
     ) {
       newContractStatus = "IN_PROGRESS";

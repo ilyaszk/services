@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Mail, CheckCircle, Clock, XCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { formatCreationDate, formatSignatureDate } from "@/lib/date-utils";
 
 interface ContractStep {
     id: string;
@@ -16,6 +17,8 @@ interface ContractStep {
     duration: string;
     isRealOffer: boolean;
     status: string;
+    clientSignedAt: string | null;
+    providerSignedAt: string | null;
     offer?: {
         id: string;
         title: string;
@@ -40,6 +43,8 @@ interface Contract {
     estimatedDuration: string;
     status: string;
     createdAt: string;
+    clientSignedAt: string | null;
+    allStepsSignedAt: string | null;
     steps: ContractStep[];
     client: {
         id: string;
@@ -56,6 +61,8 @@ export default function ContractDetailPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [updatingStep, setUpdatingStep] = useState<string | null>(null);
+    const [signingContract, setSigningContract] = useState<boolean>(false);
+    const [signingStep, setSigningStep] = useState<string | null>(null);
 
     useEffect(() => {
         if (params?.id) {
@@ -96,16 +103,22 @@ export default function ContractDetailPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending':
+            case 'PENDING':
                 return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-            case 'accepted':
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            case 'rejected':
-                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-            case 'completed':
+            case 'CLIENT_SIGNED':
                 return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-            case 'in_progress':
+            case 'FULLY_SIGNED':
+                return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200';
+            case 'ACCEPTED':
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            case 'SIGNED':
+                return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+            case 'REJECTED':
+                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+            case 'COMPLETED':
                 return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+            case 'IN_PROGRESS':
+                return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             default:
                 return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
         }
@@ -113,15 +126,21 @@ export default function ContractDetailPage() {
 
     const getStatusText = (status: string) => {
         switch (status) {
-            case 'pending':
+            case 'PENDING':
                 return 'En attente';
-            case 'accepted':
+            case 'CLIENT_SIGNED':
+                return 'Signé par le client';
+            case 'FULLY_SIGNED':
+                return 'Entièrement signé';
+            case 'ACCEPTED':
                 return 'Accepté';
-            case 'rejected':
+            case 'SIGNED':
+                return 'Signé';
+            case 'REJECTED':
                 return 'Rejeté';
-            case 'completed':
+            case 'COMPLETED':
                 return 'Terminé';
-            case 'in_progress':
+            case 'IN_PROGRESS':
                 return 'En cours';
             default:
                 return status;
@@ -130,11 +149,14 @@ export default function ContractDetailPage() {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
-            case 'completed':
+            case 'COMPLETED':
+            case 'FULLY_SIGNED':
                 return <CheckCircle className="w-4 h-4" />;
-            case 'in_progress':
+            case 'IN_PROGRESS':
+            case 'CLIENT_SIGNED':
+            case 'SIGNED':
                 return <Clock className="w-4 h-4" />;
-            case 'rejected':
+            case 'REJECTED':
                 return <XCircle className="w-4 h-4" />;
             default:
                 return <Clock className="w-4 h-4" />;
@@ -187,6 +209,62 @@ export default function ContractDetailPage() {
             setError('Erreur lors de la mise à jour du statut');
         } finally {
             setUpdatingStep(null);
+        }
+    };
+
+    const signStep = async (stepId: string) => {
+        if (!params?.id) return;
+
+        setSigningStep(stepId);
+        try {
+            const response = await fetch(`/api/contracts/${params.id}/steps/${stepId}/sign`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la signature de l\'étape');
+            }
+
+            // Recharger le contrat
+            if (params?.id) {
+                fetchContract(params.id as string);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la signature de l\'étape:', error);
+            setError('Erreur lors de la signature de l\'étape');
+        } finally {
+            setSigningStep(null);
+        }
+    };
+
+    const signStepAsClient = async (stepId: string) => {
+        if (!params?.id) return;
+
+        setSigningStep(stepId);
+        try {
+            const response = await fetch(`/api/contracts/${params.id}/steps/${stepId}/sign-client`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la signature de l\'étape');
+            }
+
+            // Recharger le contrat
+            if (params?.id) {
+                fetchContract(params.id as string);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la signature de l\'étape:', error);
+            setError('Erreur lors de la signature de l\'étape');
+        } finally {
+            setSigningStep(null);
         }
     };
 
@@ -273,6 +351,11 @@ export default function ContractDetailPage() {
                             <Badge className={roleInfo.color}>
                                 {roleInfo.label}
                             </Badge>
+                            {userRole === 'provider' && (
+                                <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 text-xs">
+                                    Vos étapes uniquement
+                                </Badge>
+                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -299,14 +382,25 @@ export default function ContractDetailPage() {
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Créé le {new Date(contract.createdAt).toLocaleDateString('fr-FR', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            })}
+                            Créé le {formatCreationDate(contract.createdAt)}
                         </p>
+
+                        {/* Informations de signature globales */}
+                        {(contract.clientSignedAt || contract.allStepsSignedAt) && (
+                            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                    État global des signatures
+                                </h4>
+                                <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                                    {contract.allStepsSignedAt && (
+                                        <div className="flex items-center">
+                                            <CheckCircle className="w-3 h-3 mr-2 text-green-600" />
+                                            <span>Toutes les étapes signées le {formatSignatureDate(contract.allStepsSignedAt)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -372,9 +466,59 @@ export default function ContractDetailPage() {
                                         </div>
                                     )}
 
+                                    {/* Informations de signature */}
+                                    {(step.clientSignedAt || step.providerSignedAt) && (
+                                        <div className="mt-4 ml-11 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                                Signatures
+                                            </h4>
+                                            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                                                {step.clientSignedAt && (
+                                                    <div className="flex items-center">
+                                                        <CheckCircle className="w-3 h-3 mr-2 text-green-600" />
+                                                        <span>Client signé le {formatSignatureDate(step.clientSignedAt)}</span>
+                                                    </div>
+                                                )}
+                                                {step.providerSignedAt && (
+                                                    <div className="flex items-center">
+                                                        <CheckCircle className="w-3 h-3 mr-2 text-green-600" />
+                                                        <span>Prestataire signé le {formatSignatureDate(step.providerSignedAt)}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Actions pour les prestataires et clients */}
                                     {step.isRealOffer && (
                                         <div className="mt-4 ml-11">
+                                            {userRole === 'client' && (
+                                                <div className="flex gap-2 flex-wrap mb-3">
+                                                    {!step.clientSignedAt && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => signStepAsClient(step.id)}
+                                                            disabled={signingStep === step.id}
+                                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                        >
+                                                            {signingStep === step.id ? 'Signature...' : 'Signer cette étape'}
+                                                        </Button>
+                                                    )}
+                                                    {step.clientSignedAt && !step.providerSignedAt && (
+                                                        <div className="text-xs text-blue-600 dark:text-blue-400 flex items-center">
+                                                            <CheckCircle className="w-3 h-3 mr-1" />
+                                                            Vous avez signé - En attente du prestataire
+                                                        </div>
+                                                    )}
+                                                    {step.clientSignedAt && step.providerSignedAt && (
+                                                        <div className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                                                            <CheckCircle className="w-3 h-3 mr-1" />
+                                                            Étape entièrement signée
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {userRole === 'provider' && step.provider?.id === session?.user?.id && (
                                                 <div className="flex gap-2 flex-wrap">
                                                     {step.status === 'PENDING' && (
@@ -408,14 +552,22 @@ export default function ContractDetailPage() {
                                                             {updatingStep === step.id ? 'Mise à jour...' : 'Marquer comme terminé'}
                                                         </Button>
                                                     )}
-                                                </div>
-                                            )}
-                                            {userRole === 'client' && (
-                                                <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {step.status === 'PENDING' && 'En attente de réponse du prestataire'}
-                                                    {step.status === 'ACCEPTED' && 'Accepté par le prestataire - En cours de réalisation'}
-                                                    {step.status === 'COMPLETED' && 'Terminé par le prestataire'}
-                                                    {step.status === 'REJECTED' && 'Refusé par le prestataire'}
+                                                    {step.clientSignedAt && !step.providerSignedAt && step.status !== 'REJECTED' && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => signStep(step.id)}
+                                                            disabled={signingStep === step.id}
+                                                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                        >
+                                                            {signingStep === step.id ? 'Signature...' : 'Signer l\'étape'}
+                                                        </Button>
+                                                    )}
+                                                    {!step.clientSignedAt && (
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                                                            <Clock className="w-3 h-3 mr-1" />
+                                                            En attente de la signature du client
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

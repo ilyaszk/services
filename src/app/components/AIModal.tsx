@@ -25,7 +25,7 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
         setMounted(true);
     }, []);
 
-    useEffect(() =>
+    useEffect(() => {
         if (aiQuery.trim().length === 0 && (needAnalysis || suggestedServices.length > 0)) {
             setNeedAnalysis("");
             setSuggestedServices([]);
@@ -260,7 +260,7 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                 {showPaths && (
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            🛤️ Chemins de Services Générés
+                            🛤️ Chemins de services générés
                         </label>
                         {servicePaths.length > 0 ? (
                             <div className="space-y-4 max-h-96 overflow-y-auto">

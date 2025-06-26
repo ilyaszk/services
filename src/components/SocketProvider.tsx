@@ -22,9 +22,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (!session?.user?.id) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || !session?.user?.id) {
       // Déconnecter si pas de session
       if (socket) {
         socket.disconnect();
@@ -34,8 +39,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Vérifier si on est côté client et qu'on n'a pas déjà une connexion
-    if (typeof window !== "undefined" && !socket) {
+    // Vérifier qu'on n'a pas déjà une connexion
+    if (!socket) {
       // Initialiser le serveur socket d'abord
       fetch("/api/socket")
         .then(() => {
@@ -68,7 +73,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         socket.disconnect();
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, socket, isMounted]);
 
   // Nettoyer la connexion quand le composant se démonte
   useEffect(() => {
