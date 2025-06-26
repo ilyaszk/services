@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
             duration: step.duration,
             isRealOffer: step.isRealOffer,
             offerId: step.offerId || null,
-            providerId: step.author?.id || null,
+            providerId: step.isRealOffer && step.author?.id ? step.author.id : null,
           })),
         },
       },
@@ -84,7 +84,18 @@ export async function GET(request: NextRequest) {
 
     const contracts = await prisma.contract.findMany({
       where: {
-        clientId: session.user.id,
+        OR: [
+          {
+            clientId: session.user.id,
+          },
+          {
+            steps: {
+              some: {
+                providerId: session.user.id,
+              },
+            },
+          },
+        ],
       },
       include: {
         steps: {
@@ -97,6 +108,7 @@ export async function GET(request: NextRequest) {
             provider: true,
           },
         },
+        client: true,
       },
       orderBy: {
         createdAt: "desc",

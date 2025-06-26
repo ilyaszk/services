@@ -39,6 +39,11 @@ interface Contract {
     status: string;
     createdAt: string;
     steps: ContractStep[];
+    client: {
+        id: string;
+        name: string | null;
+        email: string | null;
+    };
 }
 
 export default function ContractsPage() {
@@ -111,6 +116,26 @@ export default function ContractsPage() {
         }
     };
 
+    const getUserRoleInContract = (contract: Contract) => {
+        const isClient = contract.client.id === session?.user?.id;
+        const isProvider = contract.steps.some(step => step.provider?.id === session?.user?.id);
+
+        if (isClient) return 'client';
+        if (isProvider) return 'provider';
+        return 'unknown';
+    };
+
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case 'client':
+                return { label: 'Client', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
+            case 'provider':
+                return { label: 'Prestataire', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+            default:
+                return { label: 'Inconnu', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
+        }
+    };
+
     if (loading) {
         return (
             <div className="container mx-auto px-4 py-8">
@@ -173,21 +198,36 @@ export default function ContractsPage() {
                 </div>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {contracts.map((contract) => (
-                        <Card key={contract.id} className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
-                                        {contract.title}
-                                    </h3>
-                                    <Badge className={getStatusColor(contract.status)}>
-                                        {getStatusText(contract.status)}
-                                    </Badge>
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                    {contract.description}
-                                </p>
-                            </CardHeader>
+                    {contracts.map((contract) => {
+                        const userRole = getUserRoleInContract(contract);
+                        const roleInfo = getRoleLabel(userRole);
+
+                        return (
+                            <Card key={contract.id} className="hover:shadow-lg transition-shadow">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+                                            {contract.title}
+                                        </h3>
+                                        <div className="flex flex-col gap-1">
+                                            <Badge className={getStatusColor(contract.status)}>
+                                                {getStatusText(contract.status)}
+                                            </Badge>
+                                            <Badge className={roleInfo.color}>
+                                                {roleInfo.label}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                        {contract.description}
+                                    </p>
+                                    {userRole === 'provider' && (
+                                        <div className="text-sm text-blue-600 dark:text-blue-400">
+                                            <span className="font-medium">Client: </span>
+                                            {contract.client.name || contract.client.email}
+                                        </div>
+                                    )}
+                                </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
@@ -258,7 +298,8 @@ export default function ContractsPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Mail, CheckCircle, Clock, XCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface ContractStep {
     id: string;
@@ -50,9 +51,11 @@ interface Contract {
 export default function ContractDetailPage() {
     const params = useParams();
     const router = useRouter();
+    const { data: session } = useSession();
     const [contract, setContract] = useState<Contract | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [updatingStep, setUpdatingStep] = useState<string | null>(null);
 
     useEffect(() => {
         if (params?.id) {
@@ -138,6 +141,55 @@ export default function ContractDetailPage() {
         }
     };
 
+    const getUserRoleInContract = (contract: Contract) => {
+        const isClient = contract.client.id === session?.user?.id;
+        const isProvider = contract.steps.some(step => step.provider?.id === session?.user?.id);
+
+        if (isClient) return 'client';
+        if (isProvider) return 'provider';
+        return 'unknown';
+    };
+
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case 'client':
+                return { label: 'Client', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
+            case 'provider':
+                return { label: 'Prestataire', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+            default:
+                return { label: 'Inconnu', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
+        }
+    };
+
+    const updateStepStatus = async (stepId: string, newStatus: string) => {
+        if (!params?.id) return;
+
+        setUpdatingStep(stepId);
+        try {
+            const response = await fetch(`/api/contracts/${params.id}/steps/${stepId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la mise à jour du statut');
+            }
+
+            // Recharger le contrat
+            if (params?.id) {
+                fetchContract(params.id as string);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+            setError('Erreur lors de la mise à jour du statut');
+        } finally {
+            setUpdatingStep(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="container mx-auto px-4 py-8">
@@ -182,6 +234,8 @@ export default function ContractDetailPage() {
     }
 
     const realOffersCount = contract.steps.filter(step => step.isRealOffer).length;
+    const userRole = getUserRoleInContract(contract);
+    const roleInfo = getRoleLabel(userRole);
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -205,10 +259,21 @@ export default function ContractDetailPage() {
                             <p className="text-gray-600 dark:text-gray-400 mb-4">
                                 {contract.description}
                             </p>
+                            {userRole === 'provider' && (
+                                <div className="text-sm text-blue-600 dark:text-blue-400 mb-2">
+                                    <span className="font-medium">Client: </span>
+                                    {contract.client.name || contract.client.email}
+                                </div>
+                            )}
                         </div>
-                        <Badge className={getStatusColor(contract.status)}>
-                            {getStatusText(contract.status)}
-                        </Badge>
+                        <div className="flex flex-col gap-2">
+                            <Badge className={getStatusColor(contract.status)}>
+                                {getStatusText(contract.status)}
+                            </Badge>
+                            <Badge className={roleInfo.color}>
+                                {roleInfo.label}
+                            </Badge>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -315,6 +380,55 @@ export default function ContractDetailPage() {
                                                     </>
                                                 )}
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* Actions pour les prestataires et clients */}
+                                    {step.isRealOffer && (
+                                        <div className="mt-4 ml-11">
+                                            {userRole === 'provider' && step.provider?.id === session?.user?.id && (
+                                                <div className="flex gap-2 flex-wrap">
+                                                    {step.status === 'PENDING' && (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => updateStepStatus(step.id, 'ACCEPTED')}
+                                                                disabled={updatingStep === step.id}
+                                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                                            >
+                                                                {updatingStep === step.id ? 'Mise à jour...' : 'Accepter'}
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => updateStepStatus(step.id, 'REJECTED')}
+                                                                disabled={updatingStep === step.id}
+                                                                className="border-red-300 text-red-600 hover:bg-red-50"
+                                                            >
+                                                                {updatingStep === step.id ? 'Mise à jour...' : 'Refuser'}
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                    {step.status === 'ACCEPTED' && (
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => updateStepStatus(step.id, 'COMPLETED')}
+                                                            disabled={updatingStep === step.id}
+                                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                                        >
+                                                            {updatingStep === step.id ? 'Mise à jour...' : 'Marquer comme terminé'}
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {userRole === 'client' && (
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {step.status === 'PENDING' && 'En attente de réponse du prestataire'}
+                                                    {step.status === 'ACCEPTED' && 'Accepté par le prestataire - En cours de réalisation'}
+                                                    {step.status === 'COMPLETED' && 'Terminé par le prestataire'}
+                                                    {step.status === 'REJECTED' && 'Refusé par le prestataire'}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
