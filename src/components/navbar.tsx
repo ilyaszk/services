@@ -66,6 +66,12 @@ export default function Navbar() {
               >
                 Offres
               </Link>
+              <Link
+                href="/agent-ia"
+                className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+              >
+                Assistant IA
+              </Link>
               {status === "authenticated" && (
                 <>
                   <Link
@@ -243,6 +249,13 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Offres
+            </Link>
+            <Link
+              href="/agent-ia"
+              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Assistant IA
             </Link>
             {status === "authenticated" && session?.user?.role === "Client" && (
               <Link

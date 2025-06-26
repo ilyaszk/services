@@ -94,3 +94,109 @@ export async function generateSuggestedServices(userInput: string): Promise<stri
 
     return services;
 }
+
+export async function analyzeUserNeedDetailed(userInput: string, conversationHistory: string[]): Promise<string> {
+    const prompt = `
+Tu es un expert en analyse de besoins clients. 
+
+Voici l'historique de la conversation :
+${conversationHistory.join('\n')}
+
+Nouveau message de l'utilisateur : "${userInput}"
+
+Analyse de manière approfondie ce besoin et fournis :
+1. Une compréhension détaillée du besoin
+2. Des questions pertinentes pour clarifier les exigences
+3. Des suggestions d'amélioration ou d'alternatives
+4. Des conseils personnalisés basés sur le contexte
+
+Sois précis, utile et adapte ton ton au niveau d'expertise apparent de l'utilisateur.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+}
+
+export async function generatePersonalizedRecommendations(
+    userInput: string, 
+    availableServices: any[], 
+    userPreferences?: any
+): Promise<string> {
+    const prompt = `
+Tu es un conseiller expert en services et prestations.
+
+Besoin utilisateur : "${userInput}"
+
+Services disponibles :
+${availableServices.map(service => `
+- ${service.title} (${service.category}) - ${service.price}€
+  Description: ${service.description}
+`).join('\n')}
+
+${userPreferences ? `Préférences utilisateur : ${JSON.stringify(userPreferences)}` : ''}
+
+Recommande les 3 meilleurs services et explique pourquoi ils correspondent au besoin.
+Pour chaque recommandation, inclus :
+1. Le titre du service
+2. Pourquoi c'est pertinent
+3. Les avantages spécifiques
+4. Le rapport qualité-prix
+5. Des suggestions d'optimisation
+
+Format ta réponse de manière structurée et professionnelle.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+}
+
+export async function generateProjectRoadmap(userInput: string, recommendedServices: any[]): Promise<string> {
+    const prompt = `
+Tu es un chef de projet expert.
+
+Projet client : "${userInput}"
+
+Services recommandés :
+${recommendedServices.map(service => `
+- ${service.title} (${service.category}) - ${service.price}€
+`).join('\n')}
+
+Crée une feuille de route détaillée pour ce projet :
+1. Phases du projet avec chronologie
+2. Dépendances entre les services
+3. Jalons importants
+4. Estimation globale des délais
+5. Budget total et répartition
+6. Risques potentiels et mitigation
+7. Conseils pour optimiser le succès du projet
+
+Structure ta réponse de manière claire et actionnable.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+}
+
+export async function generateSmartQuestions(userInput: string, context: string): Promise<string[]> {
+    const prompt = `
+Tu es un consultant qui pose les bonnes questions pour clarifier les besoins.
+
+Message utilisateur : "${userInput}"
+Contexte : "${context}"
+
+Génère 3-5 questions intelligentes qui aideront à :
+1. Mieux comprendre les objectifs
+2. Clarifier les contraintes (budget, délais, qualité)
+3. Identifier les priorités
+4. Découvrir les besoins non exprimés
+
+Retourne uniquement les questions, une par ligne, sans numérotation.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text().split('\n').filter(q => q.trim().length > 0);
+}

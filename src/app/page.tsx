@@ -174,12 +174,152 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-3">
-                Matching IA (Bientôt)
+                Matching IA
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Bénéficiez d'un matching intelligent qui vous propose les
                 services les plus pertinents pour votre entreprise.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Assistant IA Section */}
+      <section className="py-20 relative bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900">
+        <div className="absolute inset-0 overflow-hidden z-0">
+          <div className="absolute top-[10%] left-[10%] w-[30%] h-[50%] rounded-full bg-[#8b5cf6]/10 dark:bg-[#8b5cf6]/20 blur-[100px]"></div>
+          <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[50%] rounded-full bg-[#0ea5e9]/10 dark:bg-[#0ea5e9]/20 blur-[100px]"></div>
+        </div>
+        <div className="container mx-auto px-6 md:px-12 relative z-10">
+          <div className="flex justify-center mb-8">
+            <span className="border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 rounded-full px-5 py-1 text-sm bg-blue-50 dark:bg-blue-900/30">
+              Nouveau
+            </span>
+          </div>
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+              Assistant IA Personnalisé
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              Laissez notre intelligence artificielle vous guider vers les meilleures solutions pour vos projets. 
+              Un assistant conversationnel qui comprend vos besoins spécifiques et s'adapte à vos exigences.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Analyse intelligente de vos besoins
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    L'IA analyse votre demande en profondeur pour comprendre vos objectifs, contraintes et priorités.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Recommandations personnalisées
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Recevez des suggestions de services adaptées à votre budget, délais et préférences spécifiques.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Conversation interactive
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Échangez naturellement avec l'assistant qui pose les bonnes questions pour affiner ses recommandations.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="pt-6">
+                <Link
+                  href="/agent-ia"
+                  className="inline-flex items-center bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-medium transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  Essayer l'Assistant IA
+                </Link>
+              </div>
+            </div>
+            
+            <div className="relative">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-4">Assistant IA</span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 max-w-xs">
+                      <p className="text-sm text-gray-900 dark:text-white">
+                        Bonjour ! Décrivez-moi votre projet et je vous aiderai à trouver les meilleures solutions.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 justify-end">
+                    <div className="bg-blue-500 rounded-lg p-3 max-w-xs">
+                      <p className="text-sm text-white">
+                        Je cherche à créer un site web pour mon entreprise de consulting
+                      </p>
+                    </div>
+                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                      </svg>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 max-w-xs">
+                      <p className="text-sm text-gray-900 dark:text-white">
+                        Parfait ! J'ai trouvé 3 développeurs web spécialisés qui correspondent à vos besoins...
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
