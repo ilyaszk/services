@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Bell, Check, X } from "lucide-react";
 import Link from "next/link";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { useSocket } from "@/hooks/useSocket";
 
 interface ContractNotification {
   contractId: string;
@@ -29,6 +30,7 @@ export default function ContractNotifications() {
   const [loading, setLoading] = useState(false);
   const { playNotificationSound } = useNotificationSound();
   const previousCountRef = useRef<number>(0);
+  const socket = useSocket();
 
   const fetchNotifications = async () => {
     if (!session?.user?.id) return;
@@ -61,6 +63,44 @@ export default function ContractNotifications() {
       return () => clearInterval(interval);
     }
   }, [session?.user?.id]);
+
+  // Gérer les notifications en temps réel via Socket.io
+  useEffect(() => {
+    if (!socket || !session?.user?.id) return;
+
+    const handleNewContractNotification = (newNotification: ContractNotification) => {
+      console.log("Nouvelle notification reçue:", newNotification);
+
+      setNotifications(prev => {
+        if (!prev) {
+          return {
+            count: 1,
+            notifications: [newNotification]
+          };
+        }
+
+        // Vérifier si cette notification existe déjà
+        const exists = prev.notifications.some(n => n.contractId === newNotification.contractId);
+        if (exists) {
+          return prev;
+        }
+
+        // Jouer le son de notification
+        playNotificationSound();
+
+        return {
+          count: prev.count + 1,
+          notifications: [newNotification, ...prev.notifications]
+        };
+      });
+    };
+
+    socket.on("new_contract_notification", handleNewContractNotification);
+
+    return () => {
+      socket.off("new_contract_notification", handleNewContractNotification);
+    };
+  }, [socket, session?.user?.id, playNotificationSound]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', {

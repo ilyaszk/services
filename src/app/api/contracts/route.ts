@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { emitContractNotification, getSocketServer } from "@/lib/socket-utils";
 
 // Créer un nouveau contrat
 export async function POST(request: NextRequest) {
@@ -58,6 +59,30 @@ export async function POST(request: NextRequest) {
         },
         client: true,
       },
+    });
+
+    // Émettre des notifications Socket.io pour chaque prestataire concerné
+    const io = getSocketServer();
+    const uniqueProviders = new Set<string>();
+
+    contract.steps.forEach((step) => {
+      if (step.providerId && !uniqueProviders.has(step.providerId)) {
+        uniqueProviders.add(step.providerId);
+
+        // Calculer les informations de notification pour ce prestataire
+        const providerSteps = contract.steps.filter(s => s.providerId === step.providerId);
+        const notification = {
+          contractId: contract.id,
+          contractTitle: contract.title,
+          clientName: contract.client.name || contract.client.email,
+          clientEmail: contract.client.email,
+          pendingStepsCount: providerSteps.length,
+          totalValue: providerSteps.reduce((sum, s) => sum + s.price, 0),
+          createdAt: contract.createdAt.toISOString(),
+        };
+
+        emitContractNotification(io, step.providerId, notification);
+      }
     });
 
     return NextResponse.json(contract);
