@@ -94,3 +94,134 @@ export async function generateSuggestedServices(userInput: string): Promise<stri
 
     return services;
 }
+
+export async function selectRelevantOffers(userInput: string, availableOffers: any[]): Promise<any[]> {
+    if (!availableOffers || availableOffers.length === 0) {
+        return [];
+    }
+
+    const offersData = availableOffers.map((offer, index) => ({
+        index,
+        title: offer.title,
+        description: offer.description,
+        category: offer.category,
+        price: offer.price,
+        author: offer.author?.name || 'Anonyme'
+    }));
+
+    const prompt = `
+                Tu es un expert en sélection d'offres pour une plateforme de services.
+
+                Voici le besoin exprimé par un utilisateur : "${userInput}"
+
+                Voici les offres disponibles :
+                ${offersData.map(offer =>
+                    `[${offer.index}] ${offer.title} - ${offer.description} (Catégorie: ${offer.category}, Prix: ${offer.price}€, Prestataire: ${offer.author})`
+                ).join('\n')}
+
+                Ta mission est de sélectionner TOUTES les offres qui correspondent aux différents aspects du besoin exprimé.
+
+                Règles IMPORTANTES :
+                - Analyse TOUS les éléments du besoin (ex: "site internet ET logo" = 2 besoins distincts)
+                - Sélectionne une offre pour CHAQUE aspect du besoin identifié
+                - Si l'utilisateur demande plusieurs services, trouve un prestataire pour chacun
+                - Priorité aux offres de qualité avec des descriptions détaillées
+                - Maximum 8 offres sélectionnées pour couvrir tous les besoins
+                - Assure-toi que le chemin final soit COMPLET
+
+                Exemples d'analyse :
+                - "Je veux un site internet et un logo" → Sélectionne une offre de développement web ET une offre de design graphique/logo
+                - "J'ai besoin d'un site e-commerce avec formation" → Sélectionne une offre e-commerce ET une offre de formation
+                - "Création d'application mobile et marketing" → Sélectionne une offre mobile ET une offre marketing
+
+                Format de réponse :
+                Retourne UNIQUEMENT les numéros des offres sélectionnées, un par ligne, sans explication.
+                Exemple :
+                0
+                3
+                7
+                12
+
+                Si aucune offre ne correspond, retourne exactement : "AUCUNE"
+
+                Analyse maintenant et sélectionne les offres pour créer un chemin COMPLET :
+            `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const responseText = response.text().trim();
+
+        if (responseText === "AUCUNE") {
+            return [];
+        }
+
+        const selectedIndices = responseText
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => parseInt(line))
+            .filter(index => !isNaN(index) && index >= 0 && index < availableOffers.length);
+
+        return selectedIndices.map(index => availableOffers[index]);
+    } catch (error) {
+        console.error('Erreur lors de la sélection des offres par l\'IA:', error);
+        return [];
+    }
+}
+
+export async function generatePathTitle(userNeed: string, selectedOffers: any[]): Promise<string> {
+    if (!selectedOffers || selectedOffers.length === 0) {
+        return 'Solution Personnalisée';
+    }
+
+    const offersInfo = selectedOffers.map(offer => ({
+        title: offer.title,
+        category: offer.category,
+        description: offer.description
+    }));
+
+    const prompt = `
+                Tu es un expert en naming et communication pour une plateforme de services.
+
+                Voici le besoin exprimé par un utilisateur : "${userNeed}"
+
+                Voici les services sélectionnés pour répondre à ce besoin :
+                ${offersInfo.map(offer =>
+                    `- ${offer.title} (${offer.category}) : ${offer.description}`
+                ).join('\n')}
+
+                Ta mission est de créer un titre accrocheur et professionnel qui résume parfaitement ce chemin de services.
+
+                Règles IMPORTANTES :
+                - Le titre doit être court (maximum 60 caractères)
+                - Il doit capturer l'essence du besoin et de la solution
+                - Utilise un vocabulaire professionnel et moderne
+                - Évite les termes trop techniques
+                - Rends-le attractif pour un client potentiel
+                - Si plusieurs services différents, utilise des termes comme "Solution Complète", "Pack", "Ensemble"
+
+                Exemples de bons titres :
+                - "Solution Complète : Site Web + Logo"
+                - "Pack E-commerce Complet"
+                - "Transformation Digitale Clé en Main"
+                - "Solution Web + Marketing Digital"
+                - "Pack Développement + Formation"
+
+                Retourne UNIQUEMENT le titre, sans explication ni guillemets.
+            `;
+
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text().trim();
+    } catch (error) {
+        console.error('Erreur lors de la génération du titre par l\'IA:', error);
+
+        const categories = [...new Set(selectedOffers.map(offer => offer.category))];
+        if (categories.length > 1) {
+            return `Solution Complète : ${categories.join(' + ')}`;
+        }
+        return `Solution Personnalisée : ${categories[0] || 'Multi-services'}`;
+    }
+}

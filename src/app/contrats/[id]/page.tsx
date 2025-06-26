@@ -296,12 +296,6 @@ export default function ContractDetailPage() {
                                 {contract.steps.length}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Offres réelles</p>
-                            <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                                {realOffersCount}
-                            </p>
-                        </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -340,11 +334,6 @@ export default function ContractDetailPage() {
                                                 {getStatusIcon(step.status)}
                                                 <span className="ml-1">{getStatusText(step.status)}</span>
                                             </Badge>
-                                            {step.isRealOffer && (
-                                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                    Offre réelle
-                                                </Badge>
-                                            )}
                                         </div>
                                     </div>
 

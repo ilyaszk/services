@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-// import { improveAd } from "./app/lib/gemini";
 import { improveAd } from "@/app/lib/gemini";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
