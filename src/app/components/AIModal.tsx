@@ -18,11 +18,22 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
     const [suggestedServices, setSuggestedServices] = useState<string[]>([]);
     const [servicePaths, setServicePaths] = useState<ServicePath[]>([]);
     const [showPaths, setShowPaths] = useState<boolean>(false);
+    const [isGeneratingPaths, setIsGeneratingPaths] = useState<boolean>(false);
     const [isCreatingContract, setIsCreatingContract] = useState<boolean>(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() =>
+        if (aiQuery.trim().length === 0 && (needAnalysis || suggestedServices.length > 0)) {
+            setNeedAnalysis("");
+            setSuggestedServices([]);
+            setServicePaths([]);
+            setShowPaths(false);
+            setIsGeneratingPaths(false);
+        }
+    }, [aiQuery, needAnalysis, suggestedServices.length]);
 
     const handleClose = () => {
         setAiQuery("");
@@ -30,15 +41,21 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
         setSuggestedServices([]);
         setServicePaths([]);
         setShowPaths(false);
+        setIsGeneratingPaths(false);
         onClose();
     };
 
     const handleAISubmit = async () => {
         if (!aiQuery.trim()) return;
 
+        setNeedAnalysis("");
+        setSuggestedServices([]);
+        setServicePaths([]);
+        setShowPaths(false);
+        setIsGeneratingPaths(false);
+
         setIsAILoading(true);
         try {
-            // Analyse du besoin, amélioration du filtre et génération des services suggérés en parallèle
             const [
                 analysisResult,
                 servicesResult
@@ -56,10 +73,18 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
         }
     };
 
-    const handleGeneratePaths = () => {
-        const paths = generatePaths(suggestedServices, offers);
-        setServicePaths(paths);
-        setShowPaths(true);
+    const handleGeneratePaths = async () => {
+        setIsGeneratingPaths(true);
+        try {
+            const paths = await generatePaths(suggestedServices, offers, aiQuery);
+            setServicePaths(paths);
+            setShowPaths(true);
+        } catch (error) {
+            console.error("Erreur lors de la génération des chemins:", error);
+            alert("Erreur lors de la génération des chemins de services. Veuillez réessayer.");
+        } finally {
+            setIsGeneratingPaths(false);
+        }
     };
 
     const handleCreateContract = async (servicePathData: ServicePath) => {
@@ -84,7 +109,6 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
             const contract = await response.json();
 
             // TODO: Gérer les notifications
-            // Afficher un message de succès et rediriger vers les contrats
             // alert(`Contrat créé avec succès ! ID: ${contract.id}`);
             handleClose();
 
@@ -96,26 +120,6 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
         } finally {
             setIsCreatingContract(false);
         }
-    };
-
-    const handleApplySuggestion = (suggestion: string) => {
-        const suggestions = suggestion.split(',').map(item => item.trim());
-
-        let updatedCategories: string[] = [...categories]; // Start with existing categories
-
-        suggestions.forEach(suggestion => {
-            // Add the suggestion if it's not already in the categories
-            if (!updatedCategories.includes(suggestion)) {
-                updatedCategories.push(suggestion);
-            }
-        });
-
-        console.log("Catégories disponibles:", categories);
-        console.log("Catégories mises à jour:", updatedCategories);
-
-        onApplySuggestion(updatedCategories);
-
-        handleClose();
     };
 
     if (!mounted) {
@@ -152,6 +156,16 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                         className="w-full h-32 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-[#0ea5e9] focus:border-transparent dark:bg-gray-800 dark:text-white"
                         disabled={isAILoading}
                     />
+                    {(needAnalysis || suggestedServices.length > 0) && (
+                        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <p className="text-xs text-blue-600 dark:text-blue-300 flex items-center">
+                                <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Une nouvelle analyse effacera l'analyse actuelle et tous les chemins de services générés.
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex justify-end space-x-3 mb-4">
@@ -173,7 +187,14 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                 Analyse en cours...
                             </>
                         ) : (
-                            "Analyser le besoin"
+                            <>
+                                {(needAnalysis || suggestedServices.length > 0) && (
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                )}
+                                {(needAnalysis || suggestedServices.length > 0) ? "Nouvelle analyse" : "Analyser le besoin"}
+                            </>
                         )}
                     </button>
                 </div>
@@ -212,12 +233,22 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                 <div className="mt-4 pt-3 border-t border-green-200 dark:border-green-700">
                                     <button
                                         onClick={handleGeneratePaths}
-                                        className="w-full px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] hover:opacity-90 transition-opacity text-white rounded-lg flex items-center justify-center"
+                                        disabled={isGeneratingPaths}
+                                        className="w-full px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] hover:opacity-90 transition-opacity text-white rounded-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
-                                        </svg>
-                                        Générer des Chemins de Services
+                                        {isGeneratingPaths ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                                                Sélection des offres par l'IA...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7" />
+                                                </svg>
+                                                Générer des Chemins de Services
+                                            </>
+                                        )}
                                     </button>
                                 </div>
                             )}
@@ -226,13 +257,14 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                 )}
 
                 {/* Affichage des chemins de services générés */}
-                {showPaths && servicePaths.length > 0 && (
+                {showPaths && (
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             🛤️ Chemins de Services Générés
                         </label>
-                        <div className="space-y-4 max-h-96 overflow-y-auto">
-                            {servicePaths.map((path, pathIndex) => (
+                        {servicePaths.length > 0 ? (
+                            <div className="space-y-4 max-h-96 overflow-y-auto">
+                                {servicePaths.map((path, pathIndex) => (
                                 <div key={path.id} className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="flex-1">
@@ -255,14 +287,7 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                                     </svg>
                                                     {path.estimatedDuration}
                                                 </span>
-                                                {path.realOffersCount > 0 && (
-                                                    <span className="flex items-center text-green-600 dark:text-green-400">
-                                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                        {path.realOffersCount} offre(s) réelle(s)
-                                                    </span>
-                                                )}
+
                                             </div>
                                         </div>
                                     </div>
@@ -278,13 +303,8 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                                         <div className="flex items-center mb-1">
                                                             <span className="inline-flex items-center justify-center w-6 h-6 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded-full text-xs font-semibold mr-2">
                                                                 {stepIndex + 1}
-                                                            </span>                                            <h5 className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                                                            </span>                                            <h5 className="text-sm font-medium text-gray-900 dark:text-white">
                                                 {step.name}
-                                                {step.isRealOffer && (
-                                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                        Offre réelle
-                                                    </span>
-                                                )}
                                             </h5>
                                                         </div>
                                                         <p className="text-xs text-gray-600 dark:text-gray-400 ml-8">
@@ -324,7 +344,25 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                     </div>
                                 </div>
                             ))}
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-900/20 dark:to-yellow-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                                <div className="flex items-center text-orange-700 dark:text-orange-300">
+                                    <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div>
+                                        <h4 className="font-medium mb-1">Aucune offre pertinente trouvée</h4>
+                                        <p className="text-sm">L'IA n'a trouvé aucune offre correspondant exactement à votre besoin dans notre catalogue actuel. Vous pouvez :</p>
+                                        <ul className="text-sm mt-2 space-y-1">
+                                            <li>• Reformuler votre demande de manière plus générale</li>
+                                            <li>• Consulter directement le catalogue d'offres</li>
+                                            <li>• Contacter directement les prestataires</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
