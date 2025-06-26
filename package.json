@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node src/scripts/seed.ts"
+    "seed": "tsx src/scripts/seed.ts"
   },
   "types": "module",
   "dependencies": {
