@@ -31,6 +31,9 @@ export default function SocketHandler(
     });
     res.socket.server.io = io;
 
+    // Stocker l'instance globalement pour y accéder depuis les autres APIs
+    (global as any).socketio = io;
+
     // Gestion des connexions de socket
     io.on("connection", (socket) => {
       console.log("Nouveau client connecté:", socket.id);
@@ -38,12 +41,21 @@ export default function SocketHandler(
       const userId = socket.handshake.query.userId as string;
       const conversationId = socket.handshake.query.conversationId as string;
 
+      // Pour les notifications de contrats, on n'a besoin que de l'userId
+      if (userId) {
+        // Rejoindre la salle des notifications pour cet utilisateur
+        socket.join(`user_${userId}`);
+        console.log(`Utilisateur ${userId} connecté pour les notifications`);
+      }
+
       if (!userId || !conversationId) {
-        console.log(
-          "Connexion refusée: ID utilisateur ou conversation manquant"
-        );
-        socket.disconnect();
-        return;
+        // Si pas de conversationId, on reste connecté pour les notifications
+        if (!userId) {
+          console.log("Connexion refusée: ID utilisateur manquant");
+          socket.disconnect();
+          return;
+        }
+        return; // Continue sans rejoindre de conversation spécifique
       }
 
       // Rejoindre la salle de conversation
