@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { ConversationLink } from "@/components/conversation-link";
 import { ConversationLinkMobile } from "@/components/conversation-link-mobile";
+import { RoleToggle, RoleToggleCompact, useRole } from "@/components/role-toggle";
 import ContractNotifications from "@/components/contract-notifications";
 
 export default function Navbar() {
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { currentRole } = useRole();
 
   useEffect(() => {
     setMounted(true);
@@ -67,25 +69,13 @@ export default function Navbar() {
                 className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
               >
                 Offres
-              </Link>
-              {status === "authenticated" && (
-                <>
-                  <Link
-                    href="/contrats"
-                    className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-                  >
-                    Contrats
-                  </Link>
-                  {session?.user?.role === "Client" && (
-                    <Link
-                      href="/offres/mes-offres"
-                      className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
-                    >
-                      Mes Offres
-                    </Link>
-                  )}
-                </>
-              )}
+              </Link>            <Link
+              href="/demo-roles"
+              className="text-gray-800 dark:text-gray-300 hover:text-[#0ea5e9] dark:hover:text-white border-transparent hover:border-[#0ea5e9] inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors"
+            >
+              Mon Espace
+            </Link>
+
               {status === "authenticated" && <ConversationLink />}
               {status === "authenticated" && <ContractNotifications />}
             </div>
@@ -139,7 +129,7 @@ export default function Navbar() {
                   </button>
 
                   {isMenuOpen && (
-                    <div className="z-100 origin-top-right absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ring-1 ring-black ring-opacity-5">
+                    <div className="z-100 origin-top-right absolute right-0 mt-2 w-56 rounded-lg shadow-lg py-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 ring-1 ring-black ring-opacity-5">
                       <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-800">
                         <p className="text-sm font-medium text-gray-800 dark:text-white">
                           {session.user.name || "Utilisateur"}
@@ -147,6 +137,12 @@ export default function Navbar() {
                         <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {session.user.email}
                         </p>
+                      </div>
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          Mode d'utilisation :
+                        </div>
+                        <RoleToggleCompact />
                       </div>
                       <Link
                         href="/profile"
@@ -239,6 +235,13 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isMenuOpen && (
         <div className="sm:hidden bg-white/95 dark:bg-black/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-800">
+          {/* Role Toggle for mobile */}
+          {status === "authenticated" && (
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+              <RoleToggle />
+            </div>
+          )}
+          
           <div className="pt-2 pb-3 space-y-1">
             <Link
               href="/offres"
@@ -247,23 +250,24 @@ export default function Navbar() {
             >
               Offres
             </Link>
-            {status === "authenticated" && session?.user?.role === "Client" && (
-              <Link
-                href="/offres/mes-offres"
-                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Mes Offres
-              </Link>
+            <Link
+              href="/demo-roles"
+              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Mon Espace
+            </Link>
+            {status === "authenticated" && currentRole === "client" && (
+              <>
+              </>
             )}
             {status === "authenticated" && (
-              <Link
-                href="/contrats"
-                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:border-[#0ea5e9]"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Contrats
-              </Link>
+              <>
+              </>
+            )}
+            {status === "authenticated" && currentRole === "provider" && (
+              <>
+              </>
             )}
             {status === "authenticated" && (
               <ConversationLinkMobile onClose={() => setIsMenuOpen(false)} />

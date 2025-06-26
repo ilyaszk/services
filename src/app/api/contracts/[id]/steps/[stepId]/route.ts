@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 // Mettre à jour le statut d'une étape de contrat
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string; stepId: string } }
+  { params }: { params: Promise<{ id: string; stepId: string }> }
 ) {
   try {
+    const { id, stepId } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -30,7 +31,7 @@ export async function PATCH(
     // Vérifier que l'utilisateur est le prestataire de cette étape
     const step = await prisma.contractStep.findUnique({
       where: {
-        id: params.stepId,
+        id: stepId,
       },
       include: {
         contract: true,
@@ -58,7 +59,7 @@ export async function PATCH(
     // Mettre à jour le statut de l'étape
     const updatedStep = await prisma.contractStep.update({
       where: {
-        id: params.stepId,
+        id: stepId,
       },
       data: {
         status,
@@ -93,13 +94,13 @@ export async function PATCH(
     // Si au moins une étape est acceptée, marquer le contrat comme en cours
     else if (
       allSteps.some(
-        (step) => step.status === "ACCEPTED" || step.status === "COMPLETED"
+        (c) => c.status === "ACCEPTED" || c.status === "COMPLETED"
       )
     ) {
       newContractStatus = "IN_PROGRESS";
     }
     // Si toutes les étapes sont rejetées, marquer le contrat comme rejeté
-    else if (allSteps.every((step) => step.status === "REJECTED")) {
+    else if (allSteps.every((c) => c.status === "REJECTED")) {
       newContractStatus = "REJECTED";
     }
 

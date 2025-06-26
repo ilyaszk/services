@@ -164,7 +164,7 @@ export default function ContractsPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 mt-12">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Mes Contrats
@@ -235,7 +235,7 @@ export default function ContractsPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-500 dark:text-gray-400">Étapes:</span>
                                         <span className="text-sm text-gray-900 dark:text-white">
-                                            {contract.steps.length} étapes
+                                            {contract.steps?.length || 0} étapes
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
@@ -251,7 +251,7 @@ export default function ContractsPage() {
                                         Étapes du contrat:
                                     </h4>
                                     <div className="space-y-2 max-h-32 overflow-y-auto">
-                                        {contract.steps.map((step, index) => (
+                                        {contract.steps?.map((step, index) => (
                                             <div key={step.id} className="flex justify-between items-center text-xs">
                                                 <div className="flex items-center">
                                                     <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs mr-2">
@@ -265,7 +265,7 @@ export default function ContractsPage() {
                                                     {formatPrice(step.price)}
                                                 </span>
                                             </div>
-                                        ))}
+                                        )) || []}
                                     </div>
                                 </div>
 
