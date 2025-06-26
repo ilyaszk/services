@@ -43,6 +43,30 @@ interface Offer {
   } | null;
 }
 
+interface Review {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    user: {
+        id: string;
+        name: string | null;
+        image: string | null;
+    };
+}
+
+interface ReviewStats {
+    totalReviews: number;
+    averageRating: number;
+    ratingDistribution: {
+        5: number;
+        4: number;
+        3: number;
+        2: number;
+        1: number;
+    };
+  }
+
 export default function OfferDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -57,6 +81,14 @@ export default function OfferDetailPage() {
   const [file, setFile] = useState<File | null>(null);
   const [translatedText, setTranslatedText] = useState("");
   const [translationError, setTranslationError] = useState("");
+
+
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
+    const [showReviewForm, setShowReviewForm] = useState(false);
+    const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+    const [reviewLoading, setReviewLoading] = useState(false);
+    const [reviewError, setReviewError] = useState<string | null>(null);
 
   async function fetchOffer() {
     setLoading(true);
@@ -88,11 +120,57 @@ export default function OfferDetailPage() {
     }
   }
 
-  useEffect(() => {
-    if (params?.id) {
-      fetchOffer();
-    }
-  }, [params]);
+    useEffect(() => {
+        if (params?.id) {
+            fetchOffer();
+            fetchReviews(); // Ajouter cette ligne
+        }
+    }, [params]);
+
+    async function fetchReviews() {
+        const offerId = params?.id;
+        if (!offerId) return;
+
+        try {
+            const response = await fetch(`/api/offers/${offerId}/reviews`);
+            if (response.ok) {
+                const data = await response.json();
+                setReviews(data.reviews);
+                setReviewStats(data.stats);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des avis:', error);
+        }
+  }
+
+    const handleReviewSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setReviewLoading(true);
+        setReviewError(null);
+
+        try {
+            const response = await fetch(`/api/offers/${offer?.id}/reviews`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newReview),
+            });
+
+            if (response.ok) {
+                setNewReview({ rating: 5, comment: '' });
+                setShowReviewForm(false);
+                await fetchReviews(); // Recharger les avis
+            } else {
+                const error = await response.json();
+                setReviewError(error.message || 'Erreur lors de l\'ajout de l\'avis');
+            }
+        } catch (error) {
+            setReviewError('Erreur lors de l\'ajout de l\'avis');
+        } finally {
+            setReviewLoading(false);
+        }
+  };
 
   async function handleDelete() {
     setDeleteError(null);
@@ -115,6 +193,33 @@ export default function OfferDetailPage() {
     if (e.target.files) {
       setFile(e.target.files[0]);
     }
+  };
+
+    const StarRating = ({ rating, onRatingChange, readonly = false }: {
+        rating: number;
+        onRatingChange?: (rating: number) => void;
+        readonly?: boolean;
+    }) => {
+        return (
+            <div className= "flex gap-1" >
+            {
+                [1, 2, 3, 4, 5].map((star) => (
+                    <button
+            key= { star }
+            type = "button"
+            disabled = { readonly }
+            onClick = {() => !readonly && onRatingChange?.(star)
+}
+className = {`${star <= rating
+        ? 'text-yellow-400'
+        : 'text-gray-300 dark:text-gray-600'
+    } ${!readonly ? 'hover:text-yellow-400 cursor-pointer' : 'cursor-default'}`}
+          >
+    <Star size={ 20 } fill = { star <= rating ? 'currentColor' : 'none'} />
+        </button>
+        ))}
+</div>
+    );
   };
 
   const handleTranslateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -355,7 +460,8 @@ export default function OfferDetailPage() {
                 </div>
               </div>
             )}
-          </div>
+          
+</div>
 
           {/* Colonne latérale avec auteur et actions */}
           <div className="space-y-8">
@@ -423,6 +529,182 @@ export default function OfferDetailPage() {
               </div>
             )}
 
+</div>
+
+    < div >
+    <div className="flex items-center justify-between mb-6" >
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center" >
+            <Star size={ 20 } className = "mr-2" />
+                Avis { reviewStats && `(${reviewStats.totalReviews})` }
+{
+    reviewStats && reviewStats.totalReviews > 0 && (
+        <span className="ml-2 text-yellow-500 flex items-center" >
+            <Star size={ 16 } className = "mr-1" fill = "currentColor" />
+                { reviewStats.averageRating } / 5
+                </span>
+      )
+}
+</h2>
+
+{
+    session?.user && offer.author?.id !== session.user.id && (
+        <Button
+        onClick={ () => setShowReviewForm(!showReviewForm) }
+    className = "bg-blue-600 hover:bg-blue-700"
+        >
+        Laisser un avis
+            </Button>
+    )
+}
+</div>
+
+    < div className = "bg-white dark:bg-gray-800 rounded-xl shadow-sm" >
+        {/* Statistiques des avis */ }
+{
+    reviewStats && reviewStats.totalReviews > 0 && (
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700" >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" >
+                <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2" >
+                    { reviewStats.averageRating } / 5
+                    </div>
+                    < StarRating rating = { Math.round(reviewStats.averageRating) } readonly />
+                        <p className="text-gray-600 dark:text-gray-400 mt-2" >
+                            Basé sur { reviewStats.totalReviews } avis
+                                </p>
+                                </div>
+                                < div className = "space-y-2" >
+                                {
+                                    [5, 4, 3, 2, 1].map((rating) => (
+                                        <div key= { rating } className = "flex items-center gap-3" >
+                                        <span className="text-sm text-gray-600 dark:text-gray-400 w-8" >
+                                    { rating }★
+                                        </span>
+                                        < div className = "flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2" >
+                                        <div
+                    className="bg-yellow-400 h-2 rounded-full"
+                    style = {{
+                                        width: `${reviewStats.totalReviews > 0
+                                            ? (reviewStats.ratingDistribution[rating as keyof typeof reviewStats.ratingDistribution] / reviewStats.totalReviews) * 100
+                                            : 0
+                                            }%`,
+                                    }}
+                                    > </div>
+                                    </div>
+                                    < span className = "text-sm text-gray-600 dark:text-gray-400 w-8" >
+                                        { reviewStats.ratingDistribution[rating as keyof typeof reviewStats.ratingDistribution] }
+                                        </span>
+                                        </div>
+            ))
+}
+</div>
+    </div>
+    </div>
+    )}
+{
+    showReviewForm && (
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700" >
+            <form onSubmit={ handleReviewSubmit } className = "space-y-4" >
+                <div>
+                <Label className="text-gray-700 dark:text-gray-200 mb-2 block" >
+                    Note
+                    </Label>
+                    < StarRating
+    rating = { newReview.rating }
+    onRatingChange = {(rating) => setNewReview({ ...newReview, rating })
+}
+            />
+    </div>
+    < div >
+    <Label className="text-gray-700 dark:text-gray-200 mb-2 block" >
+        Commentaire(optionnel)
+        </Label>
+        < Textarea
+value = { newReview.comment }
+onChange = {(e) => setNewReview({ ...newReview, comment: e.target.value })}
+placeholder = "Partagez votre expérience..."
+rows = { 4}
+    />
+    </div>
+{
+    reviewError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600" >
+            { reviewError }
+            </div>
+          )
+}
+<div className="flex gap-3" >
+    <Button
+              type="submit"
+disabled = { reviewLoading }
+className = "bg-blue-600 hover:bg-blue-700"
+    >
+    { reviewLoading? 'Envoi...': 'Publier l\'avis' }
+    </Button>
+    < Button
+type = "button"
+variant = "outline"
+onClick = {() => setShowReviewForm(false)}
+            >
+    Annuler
+    </Button>
+    </div>
+    </form>
+    </div>
+    )}
+
+{/* Liste des avis */ }
+<div className="p-6" >
+{
+    reviews.length > 0 ? (
+        <div className= "space-y-6" >
+        {
+            reviews.map((review) => (
+                <div key= { review.id } className = "border-b border-gray-100 dark:border-gray-700 last:border-b-0 pb-6 last:pb-0" >
+                <div className="flex items-start gap-4" >
+            {
+                review.user.image ? (
+                    <img
+                    src= { review.user.image }
+                    alt={ review.user.name || 'Avatar' }
+                    className="w-10 h-10 rounded-full"
+                />
+                ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center" >
+                <User size={ 20} className = "text-gray-500 dark:text-gray-400" />
+                </div>
+                )}
+    < div className = "flex-1" >
+        <div className="flex items-center gap-3 mb-2" >
+            <span className="font-medium text-gray-900 dark:text-white" >
+                { review.user.name || 'Utilisateur' }
+                </span>
+                < StarRating rating = { review.rating } readonly />
+                    <span className="text-sm text-gray-500 dark:text-gray-400" >
+                        { new Date(review.createdAt).toLocaleDateString('fr-FR') }
+                        </span>
+                        </div>
+{
+    review.comment && (
+        <p className="text-gray-700 dark:text-gray-200" >
+            { review.comment }
+            </p>
+                  )
+}
+</div>
+    </div>
+    </div>
+          ))}
+</div>
+      ) : (
+    <div className= "text-center py-8 text-gray-500 dark:text-gray-400" >
+    <Star size={ 32 } className = "mx-auto mb-3 opacity-50" />
+        <p>Aucun avis pour le moment.Soyez le premier à laisser un avis! </p>
+            </div>
+      )}
+</div>
+    </div>
+
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                 <Star size={20} className="mr-2 text-yellow-500" />
@@ -448,6 +730,8 @@ export default function OfferDetailPage() {
           </div>
         </div>
       </div>
+
+      
 
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
@@ -481,8 +765,11 @@ export default function OfferDetailPage() {
               </Button>
             </div>
           </div>
+          
         </div>
+        
       )}
     </div>
+    
   );
 }
