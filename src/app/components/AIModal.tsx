@@ -14,7 +14,6 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
     const [mounted, setMounted] = useState(false);
     const [aiQuery, setAiQuery] = useState<string>("");
     const [isAILoading, setIsAILoading] = useState<boolean>(false);
-    const [improvedQuery, setImprovedQuery] = useState<string>("");
     const [needAnalysis, setNeedAnalysis] = useState<string>("");
     const [suggestedServices, setSuggestedServices] = useState<string[]>([]);
     const [servicePaths, setServicePaths] = useState<ServicePath[]>([]);
@@ -27,7 +26,6 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
 
     const handleClose = () => {
         setAiQuery("");
-        setImprovedQuery("");
         setNeedAnalysis("");
         setSuggestedServices([]);
         setServicePaths([]);
@@ -41,13 +39,14 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
         setIsAILoading(true);
         try {
             // Analyse du besoin, amélioration du filtre et génération des services suggérés en parallèle
-            const [improvedQueryResult, analysisResult, servicesResult] = await Promise.all([
-                improveFilter(aiQuery, categories),
+            const [
+                analysisResult,
+                servicesResult
+            ] = await Promise.all([
                 analyzeNeed(aiQuery),
                 generateSuggestedServices(aiQuery)
             ]);
 
-            setImprovedQuery(improvedQueryResult);
             setNeedAnalysis(analysisResult);
             setSuggestedServices(servicesResult);
         } catch (error) {
@@ -161,7 +160,7 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                         className="px-4 py-2 text-gray-600 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 rounded-lg transition-colors"
                         disabled={isAILoading}
                     >
-                        {improvedQuery ? "Fermer" : "Annuler"}
+                        { "Annuler" }
                     </button>
                     <button
                         onClick={handleAISubmit}
@@ -325,26 +324,6 @@ export default function AIModal({ isOpen, onClose, categories, offers, onApplySu
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Affichage de la requête améliorée (categories) */}
-                {improvedQuery && (
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            🏷️ Catégories suggérées par l'IA
-                        </label>
-                        <div className="bg-[#0ea5e9]/5 border border-[#0ea5e9]/20 rounded-lg p-3 flex justify-between items-center">
-                            <p className="text-[#0ea5e9] dark:text-[#0ea5e9] whitespace-pre-wrap flex-1">
-                                {improvedQuery}
-                            </p>
-                            <button
-                                onClick={() => handleApplySuggestion(improvedQuery)}
-                                className="ml-3 px-3 py-1 bg-gradient-to-r from-[#10b981] to-[#1e40af] hover:opacity-90 text-white text-xs rounded transition-opacity flex-shrink-0"
-                            >
-                                Appliquer
-                            </button>
                         </div>
                     </div>
                 )}

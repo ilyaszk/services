@@ -10,6 +10,7 @@ import { Moon, Sun } from "lucide-react";
 import { ConversationLink } from "@/components/conversation-link";
 import { ConversationLinkMobile } from "@/components/conversation-link-mobile";
 import { RoleToggle, RoleToggleCompact, useRole } from "@/components/role-toggle";
+import ContractNotifications from "@/components/contract-notifications";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -19,7 +20,6 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const { currentRole } = useRole();
 
-  // Nécessaire pour éviter l'erreur d'hydratation
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -33,13 +33,15 @@ export default function Navbar() {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+    if (mounted) {
+      handleScroll();
+      window.addEventListener("scroll", handleScroll);
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [mounted]);
 
-  // Toggle thème
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
@@ -47,7 +49,7 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white/80 dark:bg-black/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 ${
-        scrolled ? "shadow-md" : ""
+        mounted && scrolled ? "shadow-md" : ""
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,6 +77,7 @@ export default function Navbar() {
             </Link>
 
               {status === "authenticated" && <ConversationLink />}
+              {status === "authenticated" && <ContractNotifications />}
             </div>
           </div>
 

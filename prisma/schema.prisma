@@ -51,9 +51,13 @@ model User {
   receivedMessages       Message[]                @relation("ReceiverMessages")
   conversationParticipants ConversationParticipant[]
   contracts              Contract[]               @relation("ClientContracts")
-  contractSteps          ContractStep[]           @relation("ProviderSteps")
+  steps          ContractStep[]           @relation("ProviderSteps")
   serviceContracts       ServiceContract[]
   userProfile            UserProfile?
+  reviews                Review[]                 @relation("UserReviews")
+  company                String?
+  jobTitle               String?
+  bio                    String?
 }
 
 model VerificationToken {
@@ -76,7 +80,22 @@ model Offer {
   image         String?
   author        User?          @relation(fields: [authorId], references: [id])
   conversations Conversation[]
-  contractSteps ContractStep[]
+  steps ContractStep[]
+  reviews       Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // Note sur 5 étoiles (1-5)
+  comment   String?  // Commentaire optionnel
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   // Utilisateur qui laisse l'avis
+  offerId   String   // Offre concernée
+  user      User     @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, offerId]) // Un utilisateur ne peut laisser qu'un seul avis par offre
 }
 
 model ContractStep {
@@ -117,7 +136,7 @@ model Contract {
   clientId          String
   servicePathId     String
   client            User           @relation("ClientContracts", fields: [clientId], references: [id], onDelete: Cascade)
-  contractSteps     ContractStep[]
+  steps     ContractStep[]
 
   @@index([clientId])
 }

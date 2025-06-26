@@ -68,7 +68,9 @@ async function main() {
       },
     });
 
-    console.log("Utilisateurs créés:", { admin, user1, user2, user3, user4 }); // Créer des offres diversifiées
+    console.log("Utilisateurs créés:", { admin, user1, user2, user3, user4 });
+
+// Créer des offres diversifiées
     const offers = [
       {
         title: "Développement Web Responsive",

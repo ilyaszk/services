@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { emitContractNotification, getSocketServer } from "@/lib/socket-utils";
 
 // Créer un nouveau contrat
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth();
+  try {
+    const session = await auth();
 
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: "Authentification requise" },
-                { status: 401 }
-            );
-        }
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentification requise" },
+        { status: 401 }
+      );
+    }
 
-        const body = await request.json();
-        const { servicePathData } = body;
+    const body = await request.json();
+    const { servicePathData } = body;
 
-        if (!servicePathData) {
-            return NextResponse.json(
-                { error: "Données du chemin de service manquantes" },
-                { status: 400 }
-            );
-        }
+    if (!servicePathData) {
+      return NextResponse.json(
+        { error: "Données du chemin de service manquantes" },
+        { status: 400 }
+      );
+    }
 
         // Créer le contrat principal
         const contract = await prisma.contract.create({
@@ -60,28 +61,27 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        return NextResponse.json(contract);
-
-    } catch (error) {
-        console.error("Erreur lors de la création du contrat:", error);
-        return NextResponse.json(
-            { error: "Erreur interne du serveur" },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json(contract);
+  } catch (error) {
+    console.error("Erreur lors de la création du contrat:", error);
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
+  }
 }
 
 // Récupérer les contrats de l'utilisateur
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth();
+  try {
+    const session = await auth();
 
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: "Authentification requise" },
-                { status: 401 }
-            );
-        }
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentification requise" },
+        { status: 401 }
+      );
+    }
 
         const contracts = await prisma.contract.findMany({
             where: {
@@ -104,13 +104,12 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        return NextResponse.json(contracts);
-
-    } catch (error) {
-        console.error("Erreur lors de la récupération des contrats:", error);
-        return NextResponse.json(
-            { error: "Erreur interne du serveur" },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json(contracts);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des contrats:", error);
+    return NextResponse.json(
+      { error: "Erreur interne du serveur" },
+      { status: 500 }
+    );
+  }
 }
