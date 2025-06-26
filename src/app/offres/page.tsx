@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { PlusCircle, Filter, Loader2, Pencil, XCircle } from "lucide-react";
-import { useSession } from "next-auth/react";
-import AIModal from "@/app/components/AIModal";
+import AIModal from '@/app/components/AIModal';
+import OfferCard from '@/app/components/OfferCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
+import { Filter, Loader2, PlusCircle } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface Offer {
   id: string;
@@ -60,30 +56,28 @@ export default function OffersPage() {
       const params = new URLSearchParams();
 
       if (selectedCategories.length === 1) {
-        params.append("category", selectedCategories[0]);
+        params.append('category', selectedCategories[0]);
       }
 
       if (priceRange < 2000) {
-        params.append("maxPrice", priceRange.toString());
+        params.append('maxPrice', priceRange.toString());
       }
 
-      const queryString = params.toString() ? `?${params.toString()}` : "";
+      const queryString = params.toString() ? `?${params.toString()}` : '';
       const response = await fetch(`/api/offers${queryString}`);
 
       if (!response.ok) {
-        throw new Error("Problème lors de la récupération des offres");
+        throw new Error('Problème lors de la récupération des offres');
       }
 
       const data: Offer[] = await response.json();
       setOffers(data);
 
       // Extraire les catégories uniques des offres
-      const uniqueCategories = Array.from(
-        new Set(data.map((offer) => offer.category))
-      );
+      const uniqueCategories = Array.from(new Set(data.map((offer) => offer.category)));
       setCategories(uniqueCategories);
     } catch (err) {
-      setError("Erreur lors du chargement des offres");
+      setError('Erreur lors du chargement des offres');
       console.error(err);
     } finally {
       setLoading(false);
@@ -93,9 +87,7 @@ export default function OffersPage() {
   // Gérer les changements de catégories sélectionnées
   const handleCategoryChange = (category: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
     );
   };
 
@@ -115,7 +107,7 @@ export default function OffersPage() {
     setDeleteError(null);
     try {
       const response = await fetch(`/api/offers/${offerId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (response.ok) {
         setOffers((prev) => prev.filter((o) => o.id !== offerId));
@@ -125,7 +117,7 @@ export default function OffersPage() {
         setDeleteError("Erreur lors de la suppression de l'offre");
       }
     } catch (err) {
-      setDeleteError("Erreur lors de la suppression");
+      setDeleteError('Erreur lors de la suppression');
     }
   }
 
@@ -159,18 +151,18 @@ export default function OffersPage() {
             </Badge>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-            Trouvez les{" "}
+            Trouvez les{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0ea5e9] to-[#8b5cf6]">
               services adaptés
-            </span>{" "}
+            </span>{' '}
             à vos besoins
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 text-center mb-10 max-w-3xl mx-auto">
-            Découvrez notre catalogue complet de prestations pour répondre à
-            tous vos besoins professionnels
+            Découvrez notre catalogue complet de prestations pour répondre à tous vos besoins
+            professionnels
           </p>
           {/* Lien Mes Offres pour les clients */}
-          {session?.user?.role === "Client" && (
+          {session?.user?.role === 'Client' && (
             <div className="flex justify-center mb-4">
               <Link href="/offres/mes-offres">
                 <Button className="bg-gradient-to-r from-[#10b981] to-[#1e40af] hover:opacity-90 transition-opacity text-white">
@@ -203,22 +195,16 @@ export default function OffersPage() {
               className="w-full border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900"
             >
               <Filter className="w-4 h-4 mr-2" />
-              {isFilterOpen ? "Masquer les filtres" : "Afficher les filtres"}
+              {isFilterOpen ? 'Masquer les filtres' : 'Afficher les filtres'}
             </Button>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filters */}
-            <div
-              className={`lg:w-1/4 ${
-                isFilterOpen ? "block" : "hidden"
-              } lg:block`}
-            >
+            <div className={`lg:w-1/4 ${isFilterOpen ? 'block' : 'hidden'} lg:block`}>
               <Card className="border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black">
                 <CardHeader className="border-b border-gray-200 dark:border-gray-800">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Filtres
-                  </h2>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Filtres</h2>
                 </CardHeader>
 
                 {/* IA Suggestion Button */}
@@ -227,7 +213,18 @@ export default function OffersPage() {
                     onClick={openAIModal}
                     className="w-[90%] bg-gradient-to-r from-[#8b5cf6] to-[#0ea5e9] hover:opacity-90 transition-opacity text-white"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mr-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-5 h-5 mr-2"
+                    >
                       <path d="M12 8V16" />
                       <path d="M8 12H16" />
                       <circle cx="12" cy="12" r="10" />
@@ -245,16 +242,11 @@ export default function OffersPage() {
                     </h3>
                     <div className="space-y-4">
                       {categories.map((category) => (
-                        <div
-                          key={category}
-                          className="flex items-center space-x-2"
-                        >
+                        <div key={category} className="flex items-center space-x-2">
                           <Checkbox
                             id={`category-${category}`}
                             checked={selectedCategories.includes(category)}
-                            onCheckedChange={() =>
-                              handleCategoryChange(category)
-                            }
+                            onCheckedChange={() => handleCategoryChange(category)}
                             className="border-gray-300 dark:border-gray-700 data-[state=checked]:bg-[#0ea5e9] data-[state=checked]:border-[#0ea5e9]"
                           />
                           <label
@@ -283,12 +275,8 @@ export default function OffersPage() {
                         className="w-full"
                       />
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          0 €
-                        </span>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          2000 €
-                        </span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">0 €</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">2000 €</span>
                       </div>
                     </div>
                   </div>
@@ -327,70 +315,14 @@ export default function OffersPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {offers.map((offer) => (
-                    <Card
+                    <OfferCard
                       key={offer.id}
-                      className="relative border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-lg hover:shadow-[#0ea5e9]/5 dark:hover:shadow-[#0ea5e9]/10"
-                    >
-                      {/* Boutons admin */}
-                      {session?.user?.role === "Admin" && (
-                        <>
-                          <button
-                            title="Modifier"
-                            className="absolute top-2 left-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-blue-100 dark:hover:bg-blue-900"
-                            onClick={() =>
-                              (window.location.href = `/offres/${offer.id}/edit`)
-                            }
-                          >
-                            <Pencil className="w-5 h-5 text-blue-600" />
-                          </button>
-                          <button
-                            title="Supprimer"
-                            className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-black/80 rounded-full p-1 hover:bg-red-100 dark:hover:bg-red-900"
-                            onClick={() => {
-                              setShowDeleteModal(true);
-                              setDeleteOfferId(offer.id);
-                            }}
-                          >
-                            <XCircle className="w-5 h-5 text-red-600" />
-                          </button>
-                        </>
-                      )}
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <Badge
-                            variant="outline"
-                            className="bg-[#0ea5e9]/5 text-[#0ea5e9] border-[#0ea5e9]/20 dark:bg-[#0ea5e9]/10 dark:border-[#0ea5e9]/20"
-                          >
-                            {offer.category}
-                          </Badge>
-                          <span className="text-gray-900 dark:text-white font-bold">
-                            {offer.price} €
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                          {offer.title}
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                          {offer.description}
-                        </p>
-                        {offer.author && (
-                          <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
-                            Proposé par:{" "}
-                            {offer.author.name || offer.author.email}
-                          </p>
-                        )}
-                      </CardContent>
-                      <CardFooter className="border-t border-gray-200 dark:border-gray-800 p-4">
-                        <Link href={`/offres/${offer.id}`} className="w-full">
-                          <Button
-                            variant="outline"
-                            className="w-full border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white"
-                          >
-                            Voir les détails
-                          </Button>
-                        </Link>
-                      </CardFooter>
-                    </Card>
+                      offer={offer}
+                      onDelete={() => {
+                        setShowDeleteModal(true);
+                        setDeleteOfferId(offer.id);
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -403,16 +335,11 @@ export default function OffersPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-red-600">
-              Confirmer la suppression
-            </h2>
+            <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
             <p className="mb-6">
-              Voulez-vous vraiment supprimer cette offre ? Cette action est
-              irréversible.
+              Voulez-vous vraiment supprimer cette offre ? Cette action est irréversible.
             </p>
-            {deleteError && (
-              <div className="text-red-500 mb-4">{deleteError}</div>
-            )}
+            {deleteError && <div className="text-red-500 mb-4">{deleteError}</div>}
             <div className="flex justify-end gap-4">
               <button
                 className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
