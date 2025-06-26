@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -16,13 +16,15 @@ export async function GET(
             );
         }
 
+        const { id } = await params;
+
         const contract = await prisma.contract.findUnique({
             where: {
-                id: params.id,
+                id: id,
                 clientId: session.user.id // Voir seulement ses propres contrats
             },
             include: {
-                steps: {
+                contractSteps: {
                     include: {
                         offer: {
                             include: {

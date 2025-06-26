@@ -17,9 +17,6 @@ async function main() {
         name: "Admin SMP",
         password: adminPassword,
         role: "Admin",
-        company: "SMP Solutions",
-        jobTitle: "Administrateur Système",
-        bio: "Administrateur de la plateforme avec plus de 10 ans d'expérience en informatique.",
       },
     });
 
@@ -32,9 +29,6 @@ async function main() {
         name: "Utilisateur Test",
         password: user1Password,
         role: "Client",
-        company: "Test Inc.",
-        jobTitle: "Designer UX/UI",
-        bio: "Designer passionné par l'expérience utilisateur et l'esthétique des interfaces.",
       },
     });
 
@@ -47,9 +41,6 @@ async function main() {
         name: "Sophie Martin",
         password: user2Password,
         role: "Client",
-        company: "Martin Tech",
-        jobTitle: "CTO",
-        bio: "Experte en technologie avec un intérêt particulier pour l'intelligence artificielle et le cloud computing.",
       },
     });
 
@@ -62,9 +53,6 @@ async function main() {
         name: "Jean Dupont",
         password: user3Password,
         role: "Provider",
-        company: "Tech Experts",
-        jobTitle: "Développeur Senior",
-        bio: "Développeur full-stack avec 8 ans d'expérience en JavaScript, React et Node.js.",
       },
     });
 
@@ -77,9 +65,6 @@ async function main() {
         name: "Laura Blanc",
         password: user4Password,
         role: "Provider",
-        company: "Design Studio",
-        jobTitle: "Directrice Artistique",
-        bio: "Passionnée de design graphique et d'identité visuelle pour les entreprises innovantes.",
       },
     });
 

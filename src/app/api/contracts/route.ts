@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
                 estimatedDuration: servicePathData.estimatedDuration,
                 clientId: session.user.id,
                 servicePathId: servicePathData.id,
-                steps: {
+                contractSteps: {
                     create: servicePathData.steps.map((step: any) => ({
                         name: step.name,
                         description: step.description,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
                 }
             },
             include: {
-                steps: {
+                contractSteps: {
                     include: {
                         offer: {
                             include: {
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
                 clientId: session.user.id
             },
             include: {
-                steps: {
+                contractSteps: {
                     include: {
                         offer: {
                             include: {
