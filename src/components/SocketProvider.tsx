@@ -44,6 +44,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             query: {
               userId: session.user.id,
             },
+            transports: ["polling", "websocket"],
+            upgrade: true,
+            rememberUpgrade: true,
+            timeout: 20000,
           });
 
           newSocket.on("connect", () => {
@@ -51,8 +55,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             setIsConnected(true);
           });
 
-          newSocket.on("disconnect", () => {
-            console.log("Déconnecté du serveur Socket.io");
+          newSocket.on("connect_error", (error) => {
+            console.error("Erreur de connexion Socket.io:", error);
+            setIsConnected(false);
+          });
+
+          newSocket.on("disconnect", (reason) => {
+            console.log("Déconnecté du serveur Socket.io:", reason);
             setIsConnected(false);
           });
 

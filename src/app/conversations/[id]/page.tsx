@@ -100,43 +100,69 @@ export default function ConversationDetailPage() {
   }, []); // Initialiser le socket
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id && params?.id) {
-      const socketUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL || ""}`;
-      console.log("Connecting to socket at:", socketUrl);
-      const newSocket = io(socketUrl, {
-        path: "/api/socket",
-        query: {
-          userId: session.user.id,
-          conversationId: params.id as string,
-        },
-        autoConnect: false,
-      });
+      // Fonction pour initialiser le socket
+      const initializeSocket = async () => {
+        try {
+          // D'abord, faire un appel pour s'assurer que le serveur Socket.IO est initialisé
+          await fetch("/api/socket", { method: "GET" });
 
-      setSocket(newSocket);
-      // Ajouter des événements de débogage
-      newSocket.on("connect", () => {
-        console.log("Socket connected:", newSocket.id);
-      });
+          // Maintenant créer la connexion socket
+          const newSocket = io({
+            path: "/api/socket",
+            query: {
+              userId: session.user.id,
+              conversationId: params.id as string,
+            },
+            transports: ["polling", "websocket"], // Commencer par polling puis upgrade vers websocket
+            upgrade: true,
+            rememberUpgrade: true,
+            timeout: 20000,
+            forceNew: true,
+          });
 
-      newSocket.on("connect_error", (err) => {
-        console.error("Socket connection error:", err.message);
-      });
+          setSocket(newSocket);
 
-      newSocket.connect();
+          // Ajouter des événements de débogage
+          newSocket.on("connect", () => {
+            console.log("Socket connected:", newSocket.id);
+          });
 
-      // Émettre un événement pour signaler que l'utilisateur est actif dans cette conversation
-      newSocket.emit("join_conversation", {
-        userId: session.user.id,
-        username: session.user.name || "Utilisateur",
-        conversationId: params.id,
-      });
+          newSocket.on("connect_error", (err) => {
+            console.error("Socket connection error:", err.message);
+            console.error("Socket connection error details:", err);
+          });
+
+          newSocket.on("disconnect", (reason) => {
+            console.log("Socket disconnected:", reason);
+          });
+
+          // Émettre un événement pour signaler que l'utilisateur est actif dans cette conversation
+          newSocket.on("connect", () => {
+            newSocket.emit("join_conversation", {
+              userId: session.user.id,
+              username: session.user.name || "Utilisateur",
+              conversationId: params.id,
+            });
+          });
+
+          return newSocket;
+        } catch (error) {
+          console.error("Erreur lors de l'initialisation du socket:", error);
+          return null;
+        }
+      };
+
+      initializeSocket();
 
       return () => {
         // Signaler que l'utilisateur quitte la conversation
-        newSocket.emit("leave_conversation", {
-          userId: session.user.id,
-          conversationId: params.id,
-        });
-        newSocket.disconnect();
+        if (socket) {
+          socket.emit("leave_conversation", {
+            userId: session.user.id,
+            conversationId: params.id,
+          });
+          socket.disconnect();
+        }
       };
     }
   }, [session, status, params?.id]); // État pour gérer les notifications
