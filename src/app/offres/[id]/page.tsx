@@ -383,7 +383,7 @@ export default function OfferDetailPage() {
                   <img
                     src={offer.image}
                     alt={offer.title}
-                    className="w-full h-auto rounded-lg shadow-md"
+                    className="w-full max-h-96 object-cover rounded-lg shadow-md"
                   />
                 </div>
               </div>
