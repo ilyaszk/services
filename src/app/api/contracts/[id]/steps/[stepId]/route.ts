@@ -5,10 +5,9 @@ import { prisma } from "@/lib/prisma";
 // Mettre à jour le statut d'une étape de contrat
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; stepId: string }> }
+  { params }: { params: { id: string; stepId: string } }
 ) {
   try {
-    const { id, stepId } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -31,7 +30,7 @@ export async function PATCH(
     // Vérifier que l'utilisateur est le prestataire de cette étape
     const step = await prisma.contractStep.findUnique({
       where: {
-        id: stepId,
+        id: params.stepId,
       },
       include: {
         contract: true,
@@ -59,7 +58,7 @@ export async function PATCH(
     // Mettre à jour le statut de l'étape
     const updatedStep = await prisma.contractStep.update({
       where: {
-        id: stepId,
+        id: params.stepId,
       },
       data: {
         status,
@@ -87,20 +86,28 @@ export async function PATCH(
 
     let newContractStatus = contract.status;
 
+    // Si toutes les étapes sont signées par les deux parties, marquer le contrat comme entièrement signé
+    if (allSteps.every((step) => step.clientSignedAt && step.providerSignedAt)) {
+      newContractStatus = "FULLY_SIGNED";
+    }
+    // Si le client a signé mais pas tous les prestataires, marquer comme "CLIENT_SIGNED"
+    else if (contract.clientSignedAt && allSteps.some((step) => !step.providerSignedAt)) {
+      newContractStatus = "CLIENT_SIGNED";
+    }
     // Si toutes les étapes sont terminées, marquer le contrat comme terminé
-    if (allSteps.every((step) => step.status === "COMPLETED")) {
+    else if (allSteps.every((step) => step.status === "COMPLETED")) {
       newContractStatus = "COMPLETED";
     }
     // Si au moins une étape est acceptée, marquer le contrat comme en cours
     else if (
       allSteps.some(
-        (c) => c.status === "ACCEPTED" || c.status === "COMPLETED"
+        (step) => step.status === "ACCEPTED" || step.status === "COMPLETED" || step.status === "SIGNED"
       )
     ) {
       newContractStatus = "IN_PROGRESS";
     }
     // Si toutes les étapes sont rejetées, marquer le contrat comme rejeté
-    else if (allSteps.every((c) => c.status === "REJECTED")) {
+    else if (allSteps.every((step) => step.status === "REJECTED")) {
       newContractStatus = "REJECTED";
     }
 

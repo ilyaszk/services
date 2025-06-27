@@ -20,8 +20,9 @@ export async function GET(
 
         const contract = await prisma.contract.findUnique({
             where: {
-                id: id,
-                clientId: session.user.id // Voir seulement ses propres contrats
+                id: params.id,
+                //id: id,
+                //clientId: session.user.id // Voir seulement ses propres contrats
             },
             include: {
                 steps: {
@@ -45,6 +46,27 @@ export async function GET(
             );
         }
 
+        // Vérifier que l'utilisateur a le droit de voir ce contrat
+        const isClient = contract.clientId === session.user.id;
+        const isProvider = contract.steps.some(step => step.providerId === session.user.id);
+
+        if (!isClient && !isProvider) {
+            return NextResponse.json(
+                { error: "Accès non autorisé à ce contrat" },
+                { status: 403 }
+            );
+        }
+
+        // Si c'est un prestataire, filtrer pour ne montrer que ses étapes
+        if (isProvider && !isClient) {
+            const filteredContract = {
+                ...contract,
+                steps: contract.steps.filter(step => step.providerId === session.user.id)
+            };
+            return NextResponse.json(filteredContract);
+        }
+
+        // Si c'est le client, montrer toutes les étapes
         return NextResponse.json(contract);
 
     } catch (error) {

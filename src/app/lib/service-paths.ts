@@ -292,10 +292,10 @@ async function generatePathTitle(userNeed: string, selectedOffers: Offer[]): Pro
 
         // Fallback basé sur les catégories
         if (categories.length > 1) {
-            return `Solution Complète : ${categories.join(' + ')}`;
+            return `Solution complète : ${categories.join(' + ')}`;
         }
 
-        return `Solution Personnalisée : ${categories[0] || 'Multi-services'}`;
+        return `Solution personnalisée : ${categories[0] || 'Multi-services'}`;
     }
 }
 

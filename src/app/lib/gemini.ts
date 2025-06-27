@@ -172,7 +172,7 @@ export async function selectRelevantOffers(userInput: string, availableOffers: a
 
 export async function generatePathTitle(userNeed: string, selectedOffers: any[]): Promise<string> {
     if (!selectedOffers || selectedOffers.length === 0) {
-        return 'Solution Personnalisée';
+        return 'Solution personnalisée';
     }
 
     const offersInfo = selectedOffers.map(offer => ({
@@ -220,8 +220,8 @@ export async function generatePathTitle(userNeed: string, selectedOffers: any[])
 
         const categories = [...new Set(selectedOffers.map(offer => offer.category))];
         if (categories.length > 1) {
-            return `Solution Complète : ${categories.join(' + ')}`;
+            return `Solution complète : ${categories.join(' + ')}`;
         }
-        return `Solution Personnalisée : ${categories[0] || 'Multi-services'}`;
+        return `Solution personnalisée : ${categories[0] || 'Multi-services'}`;
     }
 }

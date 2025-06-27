@@ -35,7 +35,7 @@ model Session {
 
 model User {
   id                     String                   @id @default(cuid())
-  name                   String 
+  name                   String
   email                  String                   @unique
   emailVerified          DateTime?
   image                  String?
@@ -109,6 +109,8 @@ model ContractStep {
   isRealOffer Boolean @default(false)
   providerId  String?
   status      String   @default("PENDING")
+  clientSignedAt    DateTime?
+  providerSignedAt  DateTime?
   acceptedAt  DateTime?
   rejectedAt  DateTime?
   startDate   DateTime?
