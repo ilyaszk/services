@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Mettre à jour le statut d'une étape de contrat
 export async function PATCH(
@@ -12,20 +12,14 @@ export async function PATCH(
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentification requise" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
     }
 
     const body = await request.json();
     const { status } = body;
 
     if (!status) {
-      return NextResponse.json(
-        { error: "Statut requis" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Statut requis' }, { status: 400 });
     }
 
     // Vérifier que l'utilisateur est le prestataire de cette étape
@@ -39,10 +33,7 @@ export async function PATCH(
     });
 
     if (!step) {
-      return NextResponse.json(
-        { error: "Étape de contrat non trouvée" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Étape de contrat non trouvée' }, { status: 404 });
     }
 
     // Vérifier que l'utilisateur est soit le prestataire de l'étape, soit le client du contrat
@@ -50,10 +41,7 @@ export async function PATCH(
     const isClient = step.contract.clientId === session.user.id;
 
     if (!isProvider && !isClient) {
-      return NextResponse.json(
-        { error: "Non autorisé à modifier cette étape" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Non autorisé à modifier cette étape' }, { status: 403 });
     }
 
     // Mettre à jour le statut de l'étape
@@ -88,20 +76,16 @@ export async function PATCH(
     let newContractStatus = contract.status;
 
     // Si toutes les étapes sont terminées, marquer le contrat comme terminé
-    if (allSteps.every((step) => step.status === "COMPLETED")) {
-      newContractStatus = "COMPLETED";
+    if (allSteps.every((step: any) => step.status === 'COMPLETED')) {
+      newContractStatus = 'COMPLETED';
     }
     // Si au moins une étape est acceptée, marquer le contrat comme en cours
-    else if (
-      allSteps.some(
-        (c) => c.status === "ACCEPTED" || c.status === "COMPLETED"
-      )
-    ) {
-      newContractStatus = "IN_PROGRESS";
+    else if (allSteps.some((c: any) => c.status === 'ACCEPTED' || c.status === 'COMPLETED')) {
+      newContractStatus = 'IN_PROGRESS';
     }
     // Si toutes les étapes sont rejetées, marquer le contrat comme rejeté
-    else if (allSteps.every((c) => c.status === "REJECTED")) {
-      newContractStatus = "REJECTED";
+    else if (allSteps.every((c: any) => c.status === 'REJECTED')) {
+      newContractStatus = 'REJECTED';
     }
 
     // Mettre à jour le statut du contrat si nécessaire
@@ -120,9 +104,6 @@ export async function PATCH(
     return NextResponse.json(updatedStep);
   } catch (error) {
     console.error("Erreur lors de la mise à jour de l'étape:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }

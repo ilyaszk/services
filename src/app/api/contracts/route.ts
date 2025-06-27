@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { emitContractNotification, getSocketServer } from "@/lib/socket-utils";
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { emitContractNotification, getSocketServer } from '@/lib/socket-utils';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Créer un nouveau contrat
 export async function POST(request: NextRequest) {
@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentification requise" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -20,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     if (!servicePathData) {
       return NextResponse.json(
-        { error: "Données du chemin de service manquantes" },
+        { error: 'Données du chemin de service manquantes' },
         { status: 400 }
       );
     }
@@ -65,19 +62,19 @@ export async function POST(request: NextRequest) {
     const io = getSocketServer();
     const uniqueProviders = new Set<string>();
 
-    contract.steps.forEach((step) => {
+    contract.steps.forEach((step: any) => {
       if (step.providerId && !uniqueProviders.has(step.providerId)) {
         uniqueProviders.add(step.providerId);
 
         // Calculer les informations de notification pour ce prestataire
-        const providerSteps = contract.steps.filter(s => s.providerId === step.providerId);
+        const providerSteps = contract.steps.filter((s: any) => s.providerId === step.providerId);
         const notification = {
           contractId: contract.id,
           contractTitle: contract.title,
           clientName: contract.client.name || contract.client.email,
           clientEmail: contract.client.email,
           pendingStepsCount: providerSteps.length,
-          totalValue: providerSteps.reduce((sum, s) => sum + s.price, 0),
+          totalValue: providerSteps.reduce((sum: any, s: any) => sum + s.price, 0),
           createdAt: contract.createdAt.toISOString(),
         };
 
@@ -87,11 +84,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(contract);
   } catch (error) {
-    console.error("Erreur lors de la création du contrat:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    console.error('Erreur lors de la création du contrat:', error);
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }
 
@@ -101,10 +95,7 @@ export async function GET(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentification requise" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
     }
 
     const contracts = await prisma.contract.findMany({
@@ -136,16 +127,13 @@ export async function GET(request: NextRequest) {
         client: true,
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     return NextResponse.json(contracts);
   } catch (error) {
-    console.error("Erreur lors de la récupération des contrats:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    console.error('Erreur lors de la récupération des contrats:', error);
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }

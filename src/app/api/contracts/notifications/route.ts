@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
 // Récupérer les contrats en attente pour un prestataire
 export async function GET(request: NextRequest) {
@@ -8,17 +8,14 @@ export async function GET(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentification requise" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
     }
 
     // Récupérer les étapes de contrat en attente où l'utilisateur est le prestataire
     const pendingSteps = await prisma.contractStep.findMany({
       where: {
         providerId: session.user.id,
-        status: "PENDING",
+        status: 'PENDING',
       },
       include: {
         contract: {
@@ -33,24 +30,24 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
     const contractsMap = new Map();
 
-    pendingSteps.forEach(step => {
+    pendingSteps.forEach((step: any) => {
       const contractId = step.contract.id;
       if (!contractsMap.has(contractId)) {
         contractsMap.set(contractId, {
           contract: step.contract,
-          pendingSteps: []
+          pendingSteps: [],
         });
       }
       contractsMap.get(contractId).pendingSteps.push(step);
     });
 
-    const notifications = Array.from(contractsMap.values()).map(item => ({
+    const notifications = Array.from(contractsMap.values()).map((item) => ({
       contractId: item.contract.id,
       contractTitle: item.contract.title,
       clientName: item.contract.client.name || item.contract.client.email,
@@ -58,18 +55,15 @@ export async function GET(request: NextRequest) {
       pendingStepsCount: item.pendingSteps.length,
       totalValue: item.pendingSteps.reduce((sum: number, step: any) => sum + step.price, 0),
       createdAt: item.contract.createdAt,
-      steps: item.pendingSteps
+      steps: item.pendingSteps,
     }));
 
     return NextResponse.json({
       count: notifications.length,
-      notifications
+      notifications,
     });
   } catch (error) {
-    console.error("Erreur lors de la récupération des notifications:", error);
-    return NextResponse.json(
-      { error: "Erreur interne du serveur" },
-      { status: 500 }
-    );
+    console.error('Erreur lors de la récupération des notifications:', error);
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
   }
 }

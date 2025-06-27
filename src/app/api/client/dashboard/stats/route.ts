@@ -1,12 +1,12 @@
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
@@ -16,29 +16,32 @@ export async function GET() {
     });
 
     const activeContracts = await prisma.contract.count({
-      where: { 
+      where: {
         clientId: session.user.id,
-        status: { in: ["PENDING", "IN_PROGRESS"] }
+        status: { in: ['PENDING', 'IN_PROGRESS'] },
       },
     });
 
     const completedContracts = await prisma.contract.count({
-      where: { 
+      where: {
         clientId: session.user.id,
-        status: "COMPLETED"
+        status: 'COMPLETED',
       },
     });
 
     // Calculer le total dépensé
     const contracts = await prisma.contract.findMany({
-      where: { 
+      where: {
         clientId: session.user.id,
-        status: { in: ["COMPLETED", "IN_PROGRESS"] }
+        status: { in: ['COMPLETED', 'IN_PROGRESS'] },
       },
       select: { totalPrice: true },
     });
 
-    const totalSpent = contracts.reduce((sum, contract) => sum + contract.totalPrice, 0);
+    const totalSpent = contracts.reduce(
+      (sum: number, contract: { totalPrice: number }) => sum + contract.totalPrice,
+      0
+    );
 
     return NextResponse.json({
       totalContracts,
@@ -47,10 +50,7 @@ export async function GET() {
       totalSpent,
     });
   } catch (error) {
-    console.error("Erreur lors de la récupération des statistiques:", error);
-    return NextResponse.json(
-      { error: "Erreur serveur" },
-      { status: 500 }
-    );
+    console.error('Erreur lors de la récupération des statistiques:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
