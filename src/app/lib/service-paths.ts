@@ -1,3 +1,5 @@
+import { generatePathTitle as generatePathTitleWithGemini } from './gemini';
+
 // Types pour les offres (de la base de données)
 export interface Offer {
     id: string;
@@ -139,64 +141,168 @@ function findOffersForService(offers: Offer[], serviceKeywords: string): Offer[]
     });
 }
 
-// Fonction principale pour générer les chemins de services basés sur les vraies offres
-export function generatePaths(suggestedServices: string[], availableOffers: Offer[] = []): ServicePath[] {
+export async function generatePaths(suggestedServices: string[], availableOffers: Offer[] = [], userNeed: string = ""): Promise<ServicePath[]> {
     if (availableOffers.length === 0) {
-        // console.warn('Aucune offre disponible pour générer des chemins');
+        console.warn('Aucune offre disponible pour générer des chemins');
         return [];
     }
 
-    const servicesToUse = suggestedServices.length > 0 ? suggestedServices : fallbackServices;
+    let selectedOffers: Offer[] = [];
+    if (userNeed.trim()) {
+        const { selectRelevantOffers } = await import('./gemini');
+        selectedOffers = await selectRelevantOffers(userNeed, availableOffers);
+    } else {
+        // Fallback: utiliser l'ancien système de recherche par mots-clés
+        const servicesToUse = suggestedServices.length > 0 ? suggestedServices : fallbackServices;
+        const limitedServices = servicesToUse.slice(0, 3);
 
-    // Limiter à 3 services pour éviter la surcharge
-    const limitedServices = servicesToUse.slice(0, 3);
+        selectedOffers = limitedServices.flatMap(service =>
+            findOffersForService(availableOffers, service).slice(0, 2)
+        );
+    }
 
-    const paths: ServicePath[] = limitedServices.map((service, index) => {
-        const relevantOffers = findOffersForService(availableOffers, service);
+    if (selectedOffers.length === 0) {
+        console.warn('Aucune offre pertinente trouvée par l\'IA pour ce besoin');
+        return [];
+    }
 
-        const steps: ServiceStep[] = [];
+    const paths: ServicePath[] = [];
 
-        // Utiliser jusqu'à 3 offres réelles
-        const selectedOffers = relevantOffers.slice(0, 3);
-        selectedOffers.forEach(offer => {
-            steps.push(offerToServiceStep(offer));
-        });
+    // Créer un chemin principal complet avec toutes les offres sélectionnées
+    if (selectedOffers.length > 0) {
+        const allSteps: ServiceStep[] = selectedOffers.map(offer => offerToServiceStep(offer));
+        const totalPrice = allSteps.reduce((sum, step) => sum + step.price, 0);
+        const realOffersCount = allSteps.length;
 
-        // Si moins de 3 étapes, ajouter des étapes complémentaires
-        while (steps.length < 3) {
-            steps.push(createComplementaryStep(steps.length, service));
-        }
+        // Organiser les étapes de manière logique (par exemple, design avant développement)
+        const organizedSteps = organizeStepsByLogicalOrder(allSteps);
 
-        const totalPrice = steps.reduce((sum, step) => sum + step.price, 0);
-        const realOffersCount = steps.filter(step => step.isRealOffer).length;
-
-        // Calcul de la durée estimée basée sur le nombre d'étapes et la complexité
-        const durationWeeks = Math.max(2, Math.ceil(steps.length * 1.5));
+        const durationWeeks = Math.max(2, Math.ceil(organizedSteps.length * 1.5));
         const estimatedDuration = `${durationWeeks}-${durationWeeks + 2} semaines`;
 
-        return {
-            id: `path-${Date.now()}-${index}`,
-            name: `Chemin d'Accompagnement : ${service}`,
-            description: realOffersCount > 0
-                ? `Solution complète basée sur ${realOffersCount} offre(s) réelle(s) de la plateforme pour ${service.toLowerCase()}`
-                : `Solution complète pour ${service.toLowerCase()} avec un accompagnement personnalisé`,
-            steps,
+        // Analyser le besoin pour créer un titre personnalisé
+        const pathTitle = await generatePathTitle(userNeed, selectedOffers);
+
+        let description = `Solution complète intégrant ${realOffersCount} prestataire sélectionné par l'IA pour répondre entièrement à votre besoin`;
+        if (realOffersCount > 1) {
+            description = `Solution complète intégrant ${realOffersCount} prestataires sélectionnés par l'IA pour répondre entièrement à votre besoin`;
+        }
+
+        paths.push({
+            id: `path-${Date.now()}-complete`,
+            name: pathTitle,
+            description,
+            steps: organizedSteps,
             totalPrice,
             estimatedDuration,
-            category: service.split(' ')[0],
+            category: 'Solution Complète',
             realOffersCount
-        };
+        });
+    }
+
+    // Optionnel : créer des chemins alternatifs par catégorie si on a plusieurs types de services
+    const offersByCategory = new Map<string, Offer[]>();
+    selectedOffers.forEach(offer => {
+        const category = offer.category || 'Autres';
+        if (!offersByCategory.has(category)) {
+            offersByCategory.set(category, []);
+        }
+        offersByCategory.get(category)!.push(offer);
     });
+
+    // Si on a plusieurs catégories, proposer aussi des chemins par spécialité
+    if (offersByCategory.size > 1) {
+        let pathIndex = 1;
+        for (const [category, offers] of offersByCategory) {
+            if (offers.length > 0) {
+                const steps: ServiceStep[] = offers.map(offer => offerToServiceStep(offer));
+                const totalPrice = steps.reduce((sum, step) => sum + step.price, 0);
+                const realOffersCount = steps.length;
+
+                const durationWeeks = Math.max(1, Math.ceil(steps.length * 1.2));
+                const estimatedDuration = `${durationWeeks}-${durationWeeks + 1} semaine${durationWeeks > 1 ? 's' : ''}`;
+
+                paths.push({
+                    id: `path-${Date.now()}-${pathIndex}`,
+                    name: `Option ${category} uniquement`,
+                    description: `Chemin spécialisé en ${category.toLowerCase()} avec ${realOffersCount} prestataire(s)`,
+                    steps,
+                    totalPrice,
+                    estimatedDuration,
+                    category: category,
+                    realOffersCount
+                });
+
+                pathIndex++;
+            }
+        }
+    }
 
     return paths;
 }
 
-// Fonction pour calculer le prix total d'un chemin
+function organizeStepsByLogicalOrder(steps: ServiceStep[]): ServiceStep[] {
+    const priorityOrder = [
+        'design', 'logo', 'graphique', 'création', 'maquette',
+        'développement', 'web', 'site', 'application', 'programmation',
+        'seo', 'référencement', 'marketing', 'promotion',
+        'formation', 'accompagnement', 'support', 'maintenance'
+    ];
+
+    return steps.sort((a, b) => {
+        const aText = `${a.name} ${a.description}`.toLowerCase();
+        const bText = `${b.name} ${b.description}`.toLowerCase();
+
+        // Trouver la priorité de chaque étape
+        const aPriority = priorityOrder.findIndex(keyword => aText.includes(keyword));
+        const bPriority = priorityOrder.findIndex(keyword => bText.includes(keyword));
+
+        // Si aucune priorité trouvée, garder l'ordre original
+        if (aPriority === -1 && bPriority === -1) return 0;
+        if (aPriority === -1) return 1;
+        if (bPriority === -1) return -1;
+
+        return aPriority - bPriority;
+    });
+}
+
+async function generatePathTitle(userNeed: string, selectedOffers: Offer[]): Promise<string> {
+    try {
+        return await generatePathTitleWithGemini(userNeed, selectedOffers);
+    } catch (error) {
+        console.error('Erreur lors de la génération du titre avec l\'IA:', error);
+
+        // Fallback vers la logique précédente en cas d'erreur
+        const needLower = userNeed.toLowerCase();
+        const categories = [...new Set(selectedOffers.map(offer => offer.category))];
+
+        // Détection de patterns courants
+        if (needLower.includes('site') && needLower.includes('logo')) {
+            return 'Solution Complète : Site Web + Identité Visuelle';
+        }
+        if (needLower.includes('e-commerce') || needLower.includes('boutique')) {
+            return 'Solution E-commerce Complète';
+        }
+        if (needLower.includes('application') || needLower.includes('app')) {
+            return 'Développement d\'Application Complète';
+        }
+        if (needLower.includes('marketing') && needLower.includes('site')) {
+            return 'Solution Web + Marketing Digital';
+        }
+
+        // Fallback basé sur les catégories
+        if (categories.length > 1) {
+            return `Solution Complète : ${categories.join(' + ')}`;
+        }
+
+        return `Solution Personnalisée : ${categories[0] || 'Multi-services'}`;
+    }
+}
+
 export function calculatePathPrice(steps: ServiceStep[]): number {
     return steps.reduce((total, step) => total + step.price, 0);
 }
 
-// Fonction pour formater le prix
 export function formatPrice(price: number): string {
     return new Intl.NumberFormat('fr-FR', {
         style: 'currency',

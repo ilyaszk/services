@@ -1,31 +1,29 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
-  ChevronLeft,
-  DollarSign,
   BookOpen,
+  ChevronLeft,
   Clock,
-  Pencil,
-  Trash2,
+  DollarSign,
+  Eye,
+  FileText,
   Image,
   Languages,
-  MessageSquare,
-  Heart,
-  Share,
-  User,
   Mail,
-  Eye,
+  MessageSquare,
+  Pencil,
   Star,
-  FileText,
-} from "lucide-react";
+  Trash2,
+  User,
+} from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Offer {
   id: string;
@@ -43,6 +41,30 @@ interface Offer {
   } | null;
 }
 
+interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+interface ReviewStats {
+  totalReviews: number;
+  averageRating: number;
+  ratingDistribution: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+}
+
 export default function OfferDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -55,8 +77,15 @@ export default function OfferDetailPage() {
 
   // State for translation feature
   const [file, setFile] = useState<File | null>(null);
-  const [translatedText, setTranslatedText] = useState("");
-  const [translationError, setTranslationError] = useState("");
+  const [translatedText, setTranslatedText] = useState('');
+  const [translationError, setTranslationError] = useState('');
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   async function fetchOffer() {
     setLoading(true);
@@ -70,18 +99,13 @@ export default function OfferDetailPage() {
     try {
       const response = await fetch(`/api/offers/${offerId}`);
       if (!response.ok) {
-        if (response.status === 404)
-          throw new Error("Cette offre n'existe pas ou a été supprimée");
+        if (response.status === 404) throw new Error("Cette offre n'existe pas ou a été supprimée");
         throw new Error("Problème lors de la récupération de l'offre");
       }
       const data: Offer = await response.json();
       setOffer(data);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Erreur lors du chargement de l'offre"
-      );
+      setError(err instanceof Error ? err.message : "Erreur lors du chargement de l'offre");
       console.error(err);
     } finally {
       setLoading(false);
@@ -91,23 +115,69 @@ export default function OfferDetailPage() {
   useEffect(() => {
     if (params?.id) {
       fetchOffer();
+      fetchReviews(); // Ajouter cette ligne
     }
   }, [params]);
+
+  async function fetchReviews() {
+    const offerId = params?.id;
+    if (!offerId) return;
+
+    try {
+      const response = await fetch(`/api/offers/${offerId}/reviews`);
+      if (response.ok) {
+        const data = await response.json();
+        setReviews(data.reviews);
+        setReviewStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des avis:', error);
+    }
+  }
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReviewLoading(true);
+    setReviewError(null);
+
+    try {
+      const response = await fetch(`/api/offers/${offer?.id}/reviews`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newReview),
+      });
+
+      if (response.ok) {
+        setNewReview({ rating: 5, comment: '' });
+        setShowReviewForm(false);
+        await fetchReviews(); // Recharger les avis
+      } else {
+        const error = await response.json();
+        setReviewError(error.message || "Erreur lors de l'ajout de l'avis");
+      }
+    } catch (error) {
+      setReviewError("Erreur lors de l'ajout de l'avis");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
 
   async function handleDelete() {
     setDeleteError(null);
     try {
       const response = await fetch(`/api/offers/${offer?.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (response.ok) {
         setShowDeleteModal(false);
-        router.push("/offres");
+        router.push('/offres');
       } else {
         setDeleteError("Erreur lors de la suppression de l'offre");
       }
     } catch (err) {
-      setDeleteError("Erreur lors de la suppression");
+      setDeleteError('Erreur lors de la suppression');
     }
   }
 
@@ -117,28 +187,56 @@ export default function OfferDetailPage() {
     }
   };
 
+  const StarRating = ({
+    rating,
+    onRatingChange,
+    readonly = false,
+  }: {
+    rating: number;
+    onRatingChange?: (rating: number) => void;
+    readonly?: boolean;
+  }) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            disabled={readonly}
+            onClick={() => !readonly && onRatingChange?.(star)}
+            className={`${
+              star <= rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+            } ${!readonly ? 'hover:text-yellow-400 cursor-pointer' : 'cursor-default'}`}
+          >
+            <Star size={20} fill={star <= rating ? 'currentColor' : 'none'} />
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   const handleTranslateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setTranslationError("");
-    setTranslatedText("");
+    setTranslationError('');
+    setTranslatedText('');
     if (!file) {
-      setTranslationError("Please select a file");
+      setTranslationError('Please select a file');
       return;
     }
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
     try {
-      const response = await fetch("/api/translate", {
-        method: "POST",
+      const response = await fetch('/api/translate', {
+        method: 'POST',
         body: formData,
       });
       if (!response.ok) {
-        throw new Error("Failed to translate");
+        throw new Error('Failed to translate');
       }
       const data = await response.json();
       setTranslatedText(data.translatedText);
     } catch (err) {
-      setTranslationError("An error occurred while translating the file.");
+      setTranslationError('An error occurred while translating the file.');
     }
   };
 
@@ -209,9 +307,7 @@ export default function OfferDetailPage() {
                 <DollarSign size={22} />
               </div>
               <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Prix
-                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Prix</div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
                   {offer.price} €
                 </div>
@@ -223,12 +319,8 @@ export default function OfferDetailPage() {
                 <BookOpen size={22} />
               </div>
               <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Catégorie
-                </div>
-                <div className="text-gray-900 dark:text-white font-medium">
-                  {offer.category}
-                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Catégorie</div>
+                <div className="text-gray-900 dark:text-white font-medium">{offer.category}</div>
               </div>
             </div>
 
@@ -237,18 +329,15 @@ export default function OfferDetailPage() {
                 <Clock size={22} />
               </div>
               <div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Publié le
-                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Publié le</div>
                 <div className="text-gray-900 dark:text-white font-medium">
-                  {new Date(offer.createdAt).toLocaleDateString("fr-FR")}
+                  {new Date(offer.createdAt).toLocaleDateString('fr-FR')}
                 </div>
               </div>
             </div>
 
             {session?.user &&
-              (session.user.role === "Admin" ||
-                offer.author?.id === session.user.id) && (
+              (session.user.role === 'Admin' || offer.author?.id === session.user.id) && (
                 <div className="flex gap-3 ml-auto">
                   <Link
                     href={`/offres/${offer.id}/edit`}
@@ -284,7 +373,7 @@ export default function OfferDetailPage() {
               </div>
             </div>
 
-            {offer.image && (
+            {offer.image ? (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <Image size={20} className="mr-2" />
@@ -294,13 +383,24 @@ export default function OfferDetailPage() {
                   <img
                     src={offer.image}
                     alt={offer.title}
-                    className="w-full h-auto rounded-lg shadow-md"
+                    className="w-full max-h-96 object-cover rounded-lg shadow-md"
                   />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <Image size={20} className="mr-2" />
+                  Photo
+                </h2>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 py-12">
+                  <Image size={48} className="mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Aucune image disponible pour cette offre</p>
                 </div>
               </div>
             )}
 
-            {offer.title === "Translate File" && (
+            {offer.title === 'Translate File' && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
                   <Languages size={20} className="mr-2" />
@@ -370,20 +470,17 @@ export default function OfferDetailPage() {
                   {offer.author.image ? (
                     <img
                       src={offer.author.image}
-                      alt={offer.author.name || "Avatar"}
+                      alt={offer.author.name || 'Avatar'}
                       className="w-16 h-16 rounded-full border-2 border-white dark:border-gray-800 shadow-md"
                     />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                      <User
-                        size={24}
-                        className="text-gray-500 dark:text-gray-400"
-                      />
+                      <User size={24} className="text-gray-500 dark:text-gray-400" />
                     </div>
                   )}
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {offer.author.name || "Utilisateur"}
+                      {offer.author.name || 'Utilisateur'}
                     </p>
                     {offer.author.email && (
                       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
@@ -409,43 +506,179 @@ export default function OfferDetailPage() {
                     <MessageSquare size={16} />
                     Contacter le prestataire
                   </Link>
-
-                  <button className="flex items-center justify-center gap-2 w-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-4 rounded-lg transition-colors">
-                    <Heart size={16} />
-                    Sauvegarder
-                  </button>
-
-                  <button className="flex items-center justify-center gap-2 w-full border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium py-2.5 px-4 rounded-lg transition-colors">
-                    <Share size={16} />
-                    Partager
-                  </button>
                 </div>
               </div>
             )}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                  <Star size={20} className="mr-2" />
+                  Avis {reviewStats && `(${reviewStats.totalReviews})`}
+                  {reviewStats && reviewStats.totalReviews > 0 && (
+                    <span className="ml-2 text-yellow-500 flex items-center">
+                      <Star size={16} className="mr-1" fill="currentColor" />
+                      {reviewStats.averageRating} / 5
+                    </span>
+                  )}
+                </h2>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                <Star size={20} className="mr-2 text-yellow-500" />
-                Statistiques
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Vues</span>
-                  <span className="font-medium text-gray-900 dark:text-white flex items-center">
-                    <Eye size={16} className="mr-1.5 text-blue-600" /> 142
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    Création
-                  </span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {new Date(offer.createdAt).toLocaleDateString()}
-                  </span>
+                {session?.user && offer.author?.id !== session.user.id && (
+                  <Button
+                    onClick={() => setShowReviewForm(!showReviewForm)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Laisser un avis
+                  </Button>
+                )}
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                {/* Statistiques des avis */}
+                {reviewStats && reviewStats.totalReviews > 0 && (
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                          {reviewStats.averageRating} / 5
+                        </div>
+                        <StarRating rating={Math.round(reviewStats.averageRating)} readonly />
+                        <p className="text-gray-600 dark:text-gray-400 mt-2">
+                          Basé sur {reviewStats.totalReviews} avis
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        {[5, 4, 3, 2, 1].map((rating) => (
+                          <div key={rating} className="flex items-center gap-3">
+                            <span className="text-sm text-gray-600 dark:text-gray-400 w-8">
+                              {rating}★
+                            </span>
+                            <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className="bg-yellow-400 h-2 rounded-full"
+                                style={{
+                                  width: `${
+                                    reviewStats.totalReviews > 0
+                                      ? (reviewStats.ratingDistribution[
+                                          rating as keyof typeof reviewStats.ratingDistribution
+                                        ] /
+                                          reviewStats.totalReviews) *
+                                        100
+                                      : 0
+                                  }%`,
+                                }}
+                              >
+                                {' '}
+                              </div>
+                            </div>
+                            <span className="text-sm text-gray-600 dark:text-gray-400 w-8">
+                              {
+                                reviewStats.ratingDistribution[
+                                  rating as keyof typeof reviewStats.ratingDistribution
+                                ]
+                              }
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {showReviewForm && (
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <form onSubmit={handleReviewSubmit} className="space-y-4">
+                      <div>
+                        <Label className="text-gray-700 dark:text-gray-200 mb-2 block">Note</Label>
+                        <StarRating
+                          rating={newReview.rating}
+                          onRatingChange={(rating) => setNewReview({ ...newReview, rating })}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-gray-700 dark:text-gray-200 mb-2 block">
+                          Commentaire(optionnel)
+                        </Label>
+                        <Textarea
+                          value={newReview.comment}
+                          onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                          placeholder="Partagez votre expérience..."
+                          rows={4}
+                        />
+                      </div>
+                      {reviewError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600">
+                          {reviewError}
+                        </div>
+                      )}
+                      <div className="flex gap-3">
+                        <Button
+                          type="submit"
+                          disabled={reviewLoading}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {reviewLoading ? 'Envoi...' : "Publier l'avis"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowReviewForm(false)}
+                        >
+                          Annuler
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {/* Liste des avis */}
+                <div className="p-6">
+                  {reviews.length > 0 ? (
+                    <div className="space-y-6">
+                      {reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          className="border-b border-gray-100 dark:border-gray-700 last:border-b-0 pb-6 last:pb-0"
+                        >
+                          <div className="flex items-start gap-4">
+                            {review.user.image ? (
+                              <img
+                                src={review.user.image}
+                                alt={review.user.name || 'Avatar'}
+                                className="w-10 h-10 rounded-full"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <User size={20} className="text-gray-500 dark:text-gray-400" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="font-medium text-gray-900 dark:text-white">
+                                  {review.user.name || 'Utilisateur'}
+                                </span>
+                                <StarRating rating={review.rating} readonly />
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                  {new Date(review.createdAt).toLocaleDateString('fr-FR')}
+                                </span>
+                              </div>
+                              {review.comment && (
+                                <p className="text-gray-700 dark:text-gray-200">{review.comment}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <Star size={32} className="mx-auto mb-3 opacity-50" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Avis Section */}
         </div>
       </div>
 
@@ -457,8 +690,7 @@ export default function OfferDetailPage() {
               <h2 className="text-xl font-bold">Confirmer la suppression</h2>
             </div>
             <p className="mb-6 text-gray-700 dark:text-gray-300">
-              Voulez-vous vraiment supprimer cette offre ? Cette action est
-              irréversible.
+              Voulez-vous vraiment supprimer cette offre ? Cette action est irréversible.
             </p>
             {deleteError && (
               <div className="p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg text-red-600 dark:text-red-400">
@@ -466,10 +698,7 @@ export default function OfferDetailPage() {
               </div>
             )}
             <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteModal(false)}
-              >
+              <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
                 Annuler
               </Button>
               <Button

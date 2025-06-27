@@ -43,6 +43,7 @@ model User {
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   role                   String                   @default("Client")
+  hasOffersPosted        Boolean                  @default(false)
   accounts               Account[]
   offers                 Offer[]
   sessions               Session[]
@@ -53,6 +54,7 @@ model User {
   steps          ContractStep[]           @relation("ProviderSteps")
   serviceContracts       ServiceContract[]
   userProfile            UserProfile?
+  reviews                Review[]                 @relation("UserReviews")
   company                String?
   jobTitle               String?
   bio                    String?
@@ -79,6 +81,21 @@ model Offer {
   author        User?          @relation(fields: [authorId], references: [id])
   conversations Conversation[]
   steps ContractStep[]
+  reviews       Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // Note sur 5 étoiles (1-5)
+  comment   String?  // Commentaire optionnel
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   // Utilisateur qui laisse l'avis
+  offerId   String   // Offre concernée
+  user      User     @relation("UserReviews", fields: [userId], references: [id], onDelete: Cascade)
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, offerId]) // Un utilisateur ne peut laisser qu'un seul avis par offre
 }
 
 model ContractStep {
@@ -92,6 +109,11 @@ model ContractStep {
   isRealOffer Boolean @default(false)
   providerId  String?
   status      String   @default("PENDING")
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+  startDate   DateTime?
+  deadline    DateTime?
+  rejectionReason String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
@@ -99,6 +121,7 @@ model ContractStep {
   provider    User?    @relation("ProviderSteps", fields: [providerId], references: [id], onDelete: SetNull)
 
   @@index([contractId])
+  @@index([providerId])
 }
 
 model Contract {

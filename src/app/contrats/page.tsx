@@ -39,6 +39,11 @@ interface Contract {
     status: string;
     createdAt: string;
     steps: ContractStep[];
+    client: {
+        id: string;
+        name: string | null;
+        email: string | null;
+    };
 }
 
 export default function ContractsPage() {
@@ -111,6 +116,26 @@ export default function ContractsPage() {
         }
     };
 
+    const getUserRoleInContract = (contract: Contract) => {
+        const isClient = contract.client.id === session?.user?.id;
+        const isProvider = contract.steps.some(step => step.provider?.id === session?.user?.id);
+
+        if (isClient) return 'client';
+        if (isProvider) return 'provider';
+        return 'unknown';
+    };
+
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case 'client':
+                return { label: 'Client', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
+            case 'provider':
+                return { label: 'Prestataire', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' };
+            default:
+                return { label: 'Inconnu', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
+        }
+    };
+
     if (loading) {
         return (
             <div className="container mx-auto px-4 py-8">
@@ -139,7 +164,7 @@ export default function ContractsPage() {
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 mt-12">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                     Mes Contrats
@@ -159,35 +184,40 @@ export default function ContractsPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <p className="text-lg">Aucun contrat trouvé</p>
-                        <p className="text-sm mt-2">Commencez par explorer les offres et créer votre premier chemin de services.</p>
                     </div>
-                    <Link
-                        href="/offres"
-                        className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-[#8b5cf6] to-[#0ea5e9] text-white rounded-lg hover:opacity-90 transition-opacity"
-                    >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Créer mon premier contrat
-                    </Link>
                 </div>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {contracts.map((contract) => (
-                        <Card key={contract.id} className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
-                                        {contract.title}
-                                    </h3>
-                                    <Badge className={getStatusColor(contract.status)}>
-                                        {getStatusText(contract.status)}
-                                    </Badge>
-                                </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                    {contract.description}
-                                </p>
-                            </CardHeader>
+                    {contracts.map((contract) => {
+                        const userRole = getUserRoleInContract(contract);
+                        const roleInfo = getRoleLabel(userRole);
+
+                        return (
+                            <Card key={contract.id} className="hover:shadow-lg transition-shadow">
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+                                            {contract.title}
+                                        </h3>
+                                        <div className="flex flex-col gap-1">
+                                            <Badge className={getStatusColor(contract.status)}>
+                                                {getStatusText(contract.status)}
+                                            </Badge>
+                                            <Badge className={roleInfo.color}>
+                                                {roleInfo.label}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                        {contract.description}
+                                    </p>
+                                    {userRole === 'provider' && (
+                                        <div className="text-sm text-blue-600 dark:text-blue-400">
+                                            <span className="font-medium">Client: </span>
+                                            {contract.client.name || contract.client.email}
+                                        </div>
+                                    )}
+                                </CardHeader>
                             <CardContent>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
@@ -205,7 +235,7 @@ export default function ContractsPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-500 dark:text-gray-400">Étapes:</span>
                                         <span className="text-sm text-gray-900 dark:text-white">
-                                            {contract.steps.length} étapes
+                                            {contract.steps?.length || 0} étapes
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
@@ -221,7 +251,7 @@ export default function ContractsPage() {
                                         Étapes du contrat:
                                     </h4>
                                     <div className="space-y-2 max-h-32 overflow-y-auto">
-                                        {contract.steps.map((step, index) => (
+                                        {contract.steps?.map((step, index) => (
                                             <div key={step.id} className="flex justify-between items-center text-xs">
                                                 <div className="flex items-center">
                                                     <span className="inline-flex items-center justify-center w-5 h-5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs mr-2">
@@ -230,17 +260,12 @@ export default function ContractsPage() {
                                                     <span className="text-gray-600 dark:text-gray-400 truncate">
                                                         {step.name}
                                                     </span>
-                                                    {step.isRealOffer && (
-                                                        <Badge className="ml-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                            Réel
-                                                        </Badge>
-                                                    )}
                                                 </div>
                                                 <span className="text-gray-500 dark:text-gray-400 font-medium">
                                                     {formatPrice(step.price)}
                                                 </span>
                                             </div>
-                                        ))}
+                                        )) || []}
                                     </div>
                                 </div>
 
@@ -258,7 +283,8 @@ export default function ContractsPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
