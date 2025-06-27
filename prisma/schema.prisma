@@ -43,6 +43,7 @@ model User {
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
   role                   String                   @default("Client")
+  hasOffersPosted        Boolean                  @default(false)
   accounts               Account[]
   offers                 Offer[]
   sessions               Session[]
@@ -110,6 +111,11 @@ model ContractStep {
   status      String   @default("PENDING")
   clientSignedAt    DateTime?
   providerSignedAt  DateTime?
+  acceptedAt  DateTime?
+  rejectedAt  DateTime?
+  startDate   DateTime?
+  deadline    DateTime?
+  rejectionReason String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   contract    Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
@@ -117,6 +123,7 @@ model ContractStep {
   provider    User?    @relation("ProviderSteps", fields: [providerId], references: [id], onDelete: SetNull)
 
   @@index([contractId])
+  @@index([providerId])
 }
 
 model Contract {
